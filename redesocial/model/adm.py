@@ -1,0 +1,28 @@
+from  user import User
+from ..model.publication import Publication
+class Adm(User):
+    def __init__(self,name,email,password,birthday,birth_month,birth_year,gender,status,post_list:list[Publication],tags:list[str],id_adm):
+        super.__init__(name,email,password,birthday,birth_month,birth_year,gender,status,post_list,tags)
+        self.id_adm = id_adm
+    @property
+    def id_adm(self):
+        return self.id_adm
+
+    @id_adm.setter
+    def id_adm(self, id_adm):
+        self.id_adm = id_adm
+    def to_dict(self):
+        return {
+            "id_adm": self.id_adm,
+            "id": self.id,
+            "name": self.__name,
+            "email": self.__email,
+            "password": self.__password,
+            "birthday": self.__birthday,
+            "birth_month": self.__birth_month,
+            "birth_year": self.__birth_year,
+            "gender": self.__gender,
+            "status": self.__status,
+            "post_list": self.__post_list,
+            "tags": self.__tags
+        }
