@@ -6,30 +6,18 @@ from ..data.userData import user_df
 #df[(df["idade"] > 18) & (df["cidade"] == "São Paulo")]
 
 class AuthService:
-    def login(self,user = None):
-        if user is None:
-            u = input("Informe seu Nome e senha:\nNome: ")
-            p = input("Senha:")
-            result = user_df[(user_df["name"] == u) & (user_df["password"] == p)]
-            if not result.empty:
-                user_id = result.iloc[0]["id"]
-                print("Login realizado com sucesso, Bem vindo "+result.iloc[0]["name"]+"!")
-                return user_id
-            else:
-                print("Usuário ou senha incorretos")
-                return None
+    def login(self,name,password):
+        
+        result = user_df[(user_df["name"] == name) & (user_df["password"] == password)]
+        if not result.empty:
+            user_id = result.iloc[0]["id"]
+            print("Login realizado com sucesso, Bem vindo "+result.iloc[0]["name"]+"!")
+            return user_id
         else:
-            print("Login realizado com sucesso, Bem vindo "+user.name+"!")
-            return user.id
-    def signup(self):
-        print("Vamos ao cadastro:")
-        name = input("Nome: ")
-        email = input("Email: ")
-        password = input("Senha: ")
-        birthday = input("Dia do nascimento: ")
-        birth_month = input("Mês do nascimento: ")
-        birth_year = input("Ano do nascimento: ")
-        gender = input("Gênero: ")
+            print("Usuário ou senha incorretos")
+            return None
+    def signup(self,name,email,password,birthday,birth_month,birth_year,gender):
+        
         satatus = 1
         post_list = []
         tags = []

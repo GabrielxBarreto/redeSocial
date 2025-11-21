@@ -1,6 +1,6 @@
 from redesocial.service.authService import AuthService
 from redesocial.service.userService import *
-
+from redesocial.controller.authController import *
 from redesocial.model.user import User
 from redesocial.data.userData import user_df 
 from redesocial.data.publicationData import publication_df 
@@ -17,6 +17,7 @@ import pandas as pd
 #transformar o objeto em dicionaraio antes de enviar para a tabela p.__dict__
 
 def main():
+
     session = 0
     op = ""
     while op != "x": 
