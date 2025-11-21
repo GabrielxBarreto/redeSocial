@@ -13,6 +13,9 @@ def createTimeLine(session):
     print(result.iloc[0]["tags"])
 
     newPost(session)
+    name = input("quem você deseja seguir (Digite o nome): ")
+    if user_df[user_df["name"]] == name:
+        user_df[user_df["followers"]]
 #user_df.loc[user_df["name"] == "Gabriel", "tags"].iloc[0].append("python")
 #adicionando valores
 def newPost(session):

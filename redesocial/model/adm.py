@@ -1,9 +1,11 @@
-from  user import User
+from ..model.user import User
 from ..model.publication import Publication
 class Adm(User):
-    def __init__(self,name,email,password,birthday,birth_month,birth_year,gender,status,post_list:list[Publication],tags:list[str],id_adm):
+    count = 0
+    def __init__(self,name,email,password,birthday,birth_month,birth_year,gender,status,post_list:list[Publication],tags:list[str]):
         super.__init__(name,email,password,birthday,birth_month,birth_year,gender,status,post_list,tags)
-        self.id_adm = id_adm
+        Adm.count += 1
+        self.id_adm = Adm.count
     @property
     def id_adm(self):
         return self.id_adm
