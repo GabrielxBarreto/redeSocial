@@ -6,7 +6,7 @@ from ..data.userData import user_df
 #df[(df["idade"] > 18) & (df["cidade"] == "São Paulo")]
 
 class AuthService:
-    def login(self,user:User = None):
+    def login(self,user = None):
         if user is None:
             u = input("Informe seu Nome e senha:\nNome: ")
             p = input("Senha:")

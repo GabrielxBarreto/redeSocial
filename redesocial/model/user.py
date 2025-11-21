@@ -15,7 +15,18 @@ class User:
         self.__status = status
         self.__post_list = post_list
         self.__tags = tags
+        self.__followers = []
     
+    
+
+    @property
+    def followers(self):
+        return self.__followers
+    
+    @followers.setter
+    def followers(self,new_followers):
+        self.__followers = new_followers
+
     @property
     def name(self):
         return self.__name
