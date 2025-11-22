@@ -4,9 +4,8 @@ from ..service.authService import AuthService
 
 #Adicionar Função para ir direto!!!
 
-def loginController(root,entry_name=None,entry_password=None):
-    label_result = tk.Label(root, text="", font=("Arial", 12))
-    label_result.pack()
+def loginController(entry_name=None,entry_password=None):
+    
     service = AuthService()
     if entry_name is not None and entry_password is not None: 
         name = entry_name.get()
