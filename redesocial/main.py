@@ -1,3 +1,5 @@
+from redesocial.views.tk_frontend import *
+
 from redesocial.service.authService import AuthService
 from redesocial.service.userService import *
 from redesocial.controller.authController import *
@@ -16,26 +18,7 @@ import pandas as pd
 #a função loc do pandas df.loc[linha , coluna] é um buscador tras suporte a condições e querrys complexas
 #transformar o objeto em dicionaraio antes de enviar para a tabela p.__dict__
 
-def main():
-
-    session = 0
-    op = ""
-    while op != "x": 
-        print("_______________________________(X)")
-        print("Possui Cadastro? (Sim/Não/X)")
-        print("________________________________")
-        op = input().lower()
-        if(op == "sim" or op == "s" or op == "yes" or op == "y"):
-            session = AuthService().login()
-            if session != None:
-                createTimeLine(session)
-        elif(op == "não" or op == "n" or op == "no" or op == "nao"): 
-            u  = AuthService().signup()
-            AuthService().login(u)
-
-        else:
-           print("comando não válido") 
-   
+#def main():
 
 if __name__ == "__main__":
-    main()
+    pass

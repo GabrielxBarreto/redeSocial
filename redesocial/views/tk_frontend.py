@@ -1,6 +1,9 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import messagebox, scrolledtext
+from ..controller.authController import loginController
+from ..controller.authController import  signupController
+
 import sys
 import os
 import json
@@ -437,12 +440,13 @@ def main():
     def abrir_cadastro():
         criar_cadastro(root, font_roboto, font_inter, img_cadastrar_confirm)
 
+
     # buttons de acao
     if img_entrar:
-        tk.Button(main_frame, image=img_entrar, command=fazer_login, bd=0, highlightthickness=0,
+        tk.Button(main_frame, image=img_entrar, command=lambda:loginController(entry_user,entry_pass), bd=0, highlightthickness=0,
                   activebackground=dark_theme_colors["bg_main"]).pack(pady=(40, 10), padx=40, fill="x")
     else:
-        tk.Button(main_frame, text="Entrar", width=20, height=2, command=fazer_login, font=font_inter,
+        tk.Button(main_frame, text="Entrar", width=20, height=2, command=lambda:loginController(entry_user,entry_pass), font=font_inter,
                   bg=dark_theme_colors["purple_button"], fg=dark_theme_colors["fg_button"],
                   activebackground=dark_theme_colors["active_bg_button"], activeforeground=dark_theme_colors["fg_button"]).pack(pady=(40, 10), padx=40, fill="x")
     
