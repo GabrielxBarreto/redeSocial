@@ -4,34 +4,32 @@ from ..service.authService import AuthService
 
 #Adicionar Função para ir direto!!!
 
-def loginController(entry_name=None,entry_password=None):
-    
+def loginController(root,entry_name=None,entry_password=None):
+    label_result = tk.Label(root, text="", font=("Arial", 12))
+    label_result.pack()
     service = AuthService()
-    if entry_name is not None and entry_password is not None: 
+
+    if isinstance(entry_name,tk.Entry) and isinstance(entry_password,tk.Entry):
         name = entry_name.get()
-        password = entry_password.get()
-        result = service.login(name,password)
-        if result is None:
-            messagebox.showerror("Erro","Falhouuuu") 
-            label_result.config(text="Login falhou!", fg="red")
-        else:
-            messagebox.showinfo("OK", "Deu certo!!!") 
-            label_result.config(text="Bem-vindo!", fg="green")
+        password = entry_password.get() 
+
     else:
         name = entry_name
         password = entry_password
-        result = service.login(name,password)
-        if result is None:
-            messagebox.showerror("Erro","Falhouuuu") 
-            label_result.config(text="Login falhou!", fg="red")
-        else:
-            messagebox.showinfo("OK", "Deu certo!!!") 
-            label_result.config(text="Bem-vindo!", fg="green")
 
-def signupController(entry_name,entry_email,entry_password,entry_day,entry_month,entry_year,entry_gender):
+    result = service.login(name, password)
+
+    if result is None:
+        messagebox.showerror("Erro", "Falhouuuu")
+        label_result.config(text="Login falhou!", fg="red")
+    else:
+        messagebox.showinfo("OK", "Deu certo!!!")
+        label_result.config(text="Bem-vindo!", fg="green")
+
+def signupController(root,entry_name,entry_email,entry_password,entry_day,entry_month,entry_year,entry_gender):
     service = AuthService()
     u = service.signup(entry_name.get(),entry_email.get(),entry_password.get(),entry_day.get(),entry_month.get(),entry_year.get(),entry_gender.get())
-    loginController(u.name,u.password)
+    loginController(root,u.name,u.password)
 
 #root = tk.Tk()
 #root.title("Login")

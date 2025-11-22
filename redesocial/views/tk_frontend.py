@@ -305,14 +305,56 @@ def criar_cadastro(root, font_roboto, font_inter, img_cadastrar_confirm):
                   insertbackground=dark_theme_colors["fg_entry"])
     e2.pack(pady=6)
 
+    tk.Label(cad, text="Email:", font=font_inter, 
+             bg=dark_theme_colors["bg_main"], fg=dark_theme_colors["fg_text"]).pack()
+    e3 = tk.Entry(cad, font=font_inter, show="*",
+                  bg=dark_theme_colors["bg_entry"], fg=dark_theme_colors["fg_entry"],
+                  insertbackground=dark_theme_colors["fg_entry"])
+    e3.pack(pady=6)
+
+    tk.Label(cad, text="Dia de Nascimento:", font=font_inter, 
+             bg=dark_theme_colors["bg_main"], fg=dark_theme_colors["fg_text"]).pack()
+    e4 = tk.Entry(cad, font=font_inter, show="*",
+                  bg=dark_theme_colors["bg_entry"], fg=dark_theme_colors["fg_entry"],
+                  insertbackground=dark_theme_colors["fg_entry"])
+    e4.pack(pady=6)
+
+    tk.Label(cad, text="Mês de Nascimento:", font=font_inter, 
+             bg=dark_theme_colors["bg_main"], fg=dark_theme_colors["fg_text"]).pack()
+    e5 = tk.Entry(cad, font=font_inter, show="*",
+                  bg=dark_theme_colors["bg_entry"], fg=dark_theme_colors["fg_entry"],
+                  insertbackground=dark_theme_colors["fg_entry"])
+    e5.pack(pady=6)
+
+    tk.Label(cad, text="Ano de Nascimento:", font=font_inter, 
+             bg=dark_theme_colors["bg_main"], fg=dark_theme_colors["fg_text"]).pack()
+    e6 = tk.Entry(cad, font=font_inter, show="*",
+                  bg=dark_theme_colors["bg_entry"], fg=dark_theme_colors["fg_entry"],
+                  insertbackground=dark_theme_colors["fg_entry"])
+    e6.pack(pady=6)
+
+    tk.Label(cad, text="genero:", font=font_inter, 
+             bg=dark_theme_colors["bg_main"], fg=dark_theme_colors["fg_text"]).pack()
+    e7 = tk.Entry(cad, font=font_inter, show="*",
+                  bg=dark_theme_colors["bg_entry"], fg=dark_theme_colors["fg_entry"],
+                  insertbackground=dark_theme_colors["fg_entry"])
+    e7.pack(pady=6)
+
+    
+
     def cadastrar():
         u = e1.get().strip()
-        s = e2.get().strip()
-        if not u or not s:
+        e = e2.get().strip()
+        p = e3.get().strip()
+        d = e4.get().strip()
+        m = e5.get().strip()
+        a = e6.get().strip()
+        g = e7.get().strip()
+        if not u or not g or not p or not d or not m or not a:
             messagebox.showwarning("Aviso", "Preencha tudo.")
             return
         try:
-            user_service.create_user(u, s)
+            signupController(root,e1, e2, e3, e4, e5, e6, e7)
             messagebox.showinfo("OK", "Cadastro criado!")
             cad.destroy()
         except Exception as e:
@@ -442,11 +484,12 @@ def main():
 
 
     # buttons de acao
+    #-__________________________________________________________________________________________________________________
     if img_entrar:
-        tk.Button(main_frame, image=img_entrar, command=lambda:loginController(entry_user,entry_pass), bd=0, highlightthickness=0,
+        tk.Button(main_frame, image=img_entrar, command=lambda:loginController(root,entry_user,entry_pass), bd=0, highlightthickness=0,
                   activebackground=dark_theme_colors["bg_main"]).pack(pady=(40, 10), padx=40, fill="x")
     else:
-        tk.Button(main_frame, text="Entrar", width=20, height=2, command=lambda:loginController(entry_user,entry_pass), font=font_inter,
+        tk.Button(main_frame, text="Entrar", width=20, height=2, command=lambda:loginController(root,entry_user,entry_pass), font=font_inter,
                   bg=dark_theme_colors["purple_button"], fg=dark_theme_colors["fg_button"],
                   activebackground=dark_theme_colors["active_bg_button"], activeforeground=dark_theme_colors["fg_button"]).pack(pady=(40, 10), padx=40, fill="x")
     
@@ -466,5 +509,3 @@ def main():
     root.mainloop()
 
 
-if __name__ == "__main__":
-    main()
