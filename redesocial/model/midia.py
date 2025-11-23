@@ -9,7 +9,6 @@ class Midia:
         self._original_path = original_path
         self._id_user = id_user
 
-
     @property
     def type(self):
         return self._type

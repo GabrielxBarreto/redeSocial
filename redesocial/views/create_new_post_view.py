@@ -5,10 +5,6 @@ import tkinter.font as tkFont
 from .config_layout import *
 from ..service.userService import new_post
 
-from ..config.settings import (
-    DARK_THEME_COLORS, carregar_icone, font_roboto, 
-    font_inter, font_roboto_big, on_entry_click, on_focus_out
-)
 
 
  # --- Conteúdo da Aba NOVO POST ---

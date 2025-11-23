@@ -3,10 +3,6 @@ from tkinter import messagebox, scrolledtext
 from PIL import Image, ImageTk 
 import tkinter.font as tkFont 
 from .config_layout import *
-from ..config.settings import (
-    DARK_THEME_COLORS, carregar_icone, font_roboto, 
-    font_inter, font_roboto_big, on_entry_click, on_focus_out
-)
 
 
 
@@ -20,7 +16,7 @@ def abrir_home(usuario, login_root):
         font_inter_small = tkFont.Font(family="Arial", size=10) # Fallback
 
     # 1. Carrega dados do perfil (com os novos padrões)
-   
+    profile_data=[]
     if not profile_data:
         # Fallback se os dados não carregarem
         profile_data = {
@@ -28,6 +24,7 @@ def abrir_home(usuario, login_root):
             "location": "Concórdia - SC", "education": "IFC Concórdia",
             "interests": ["Tecnologia", "Inovação", "Codificação"], "posts": []
         }
+    home.mainloop()
         
 
 
