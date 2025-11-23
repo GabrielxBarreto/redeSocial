@@ -2,8 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext
 from PIL import Image, ImageTk 
 import tkinter.font as tkFont 
-
-# Importa tudo o que é necessário de settings
+from .config_layout import *
 from ..config.settings import (
     DARK_THEME_COLORS, carregar_icone, font_roboto, 
     font_inter, font_roboto_big, on_entry_click, on_focus_out
@@ -31,42 +30,12 @@ def abrir_home(usuario, login_root):
             "interests": ["Tecnologia", "Inovação", "Codificação"], "posts": []
         }
         
-    # --- Configuração Inicial da Janela ---
-    home = tk.Toplevel(bg=DARK_THEME_COLORS["bg_main"]) 
-    home.title("Home")
-    home.geometry("420x720")
-    home.resizable(False, False) 
 
-    colors = DARK_THEME_COLORS 
-    tamanho_icone = (30, 30) 
-    
-    # Adicionando ícones (Mantenha as imagens na pasta img/)
-    icones = {
-        "Home": carregar_icone("home_image.png", tamanho=tamanho_icone),
-        "Novo Post": carregar_icone("newpost_image.png", tamanho=tamanho_icone),
-        "Projetos": carregar_icone("projeto_image.png", tamanho=tamanho_icone), 
-        "Ranking": carregar_icone("ranking_image.png", tamanho=tamanho_icone),
-        "Perfil": carregar_icone("user_image.png", tamanho=tamanho_icone),
-        "cover_image": carregar_icone("cover_image.png", tamanho=(420, 150)), 
-        "profile_pic": carregar_icone("profile_pic.png", tamanho=(80, 80)),   
-        "back_arrow": carregar_icone("back_arrow.png", tamanho=(24, 24)),     
-        "friends_icon": carregar_icone("friends_icon.png", tamanho=(20, 20)), 
-        "location_icon": carregar_icone("location_icon.png", tamanho=(16,16)), 
-        "education_icon": carregar_icone("education_icon.png", tamanho=(16,16)), 
-        "post_image": carregar_icone("post_image.png", tamanho=(380, 200)) 
-    }
-    botoes_barra = []
-    
     # Função de Logout
     def fazer_logout():
         home.destroy(); login_root.deiconify(); messagebox.showinfo("Logout", "Sessão encerrada com sucesso.")
 
-    # --- Conteúdo Central ---
-    container = tk.Frame(home, bg=colors["bg_main"]); container.pack(expand=True, fill="both")
-
-    frames = {}; abas_principais = ["Home", "Novo Post", "Projetos", "Ranking", "Perfil"]
-    for aba in abas_principais:
-        frames[aba] = tk.Frame(container, bg=colors["bg_frame"]) 
+   
 
     # --- Conteúdo da Aba HOME (Feed de Posts) ---
     f = frames["Home"]
@@ -82,15 +51,11 @@ def abrir_home(usuario, login_root):
         feed.configure(state="normal"); feed.insert("1.0", f"\n\n{usuario}: {texto}\n{'-'*40}\n")
         feed.configure(state="disabled"); post_box.delete("1.0", "end"); messagebox.showinfo("OK", "Publicado!")
 
-    # --- Conteúdo da Aba NOVO POST ---
-    f = frames["Novo Post"]
-    tk.Label(f, text="Criar Novo Post", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).pack(pady=10)
-    post_box = scrolledtext.ScrolledText(f, width=42, height=10, font=font_inter, bg=colors["bg_entry"], fg=colors["fg_entry"], insertbackground=colors["fg_entry"], wrap="word"); post_box.pack(padx=10, pady=5)
-    tk.Button(f, text="Publicar", command=publicar, width=20, height=2, font=font_inter, bg=colors["bg_button"], fg=colors["fg_button"], activebackground=colors["active_bg_button"], activeforeground=colors["fg_button"]).pack(pady=10)
+   
 
     # --- Conteúdo da Aba RANKING e PROJETOS ---
-    f = frames["Projetos"]; tk.Label(f, text="Meus Projetos", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).pack(pady=10)
-    f = frames["Ranking"]; tk.Label(f, text="Ranking Global", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).pack(pady=10)
+    
+    
 
     # --- Conteúdo da Aba PERFIL ---
     f_perfil = frames["Perfil"] 

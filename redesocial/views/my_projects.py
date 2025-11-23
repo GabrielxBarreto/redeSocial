@@ -1,0 +1,1 @@
+f = frames["Projetos"]; tk.Label(f, text="Meus Projetos", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).pack(pady=10)

@@ -57,7 +57,7 @@ def criar_cadastro(root, img_cadastrar_confirm):
 
     # Botão de Cadastrar
     if img_cadastrar_confirm:
-        tk.Button(content_frame, image=img_cadastrar_confirm, command=cadastrar, bd=0, highlightthickness=0,
+        tk.Button(content_frame, image=None, command=cadastrar, bd=0, highlightthickness=0,
                   activebackground=colors["bg_main"]).pack(pady=(20, 10))
     else:
         tk.Button(content_frame, text="Cadastrar", width=20, height=2, command=cadastrar, font=font_inter,

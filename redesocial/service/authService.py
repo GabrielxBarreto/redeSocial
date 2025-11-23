@@ -54,7 +54,7 @@ class AuthService:
             
     def signup(self,name,email,password,birthday,birth_month,birth_year,gender):
         
-        # ... (Seu código de cadastro mantido)
+
         satatus = 1
         post_list = []
         tags = []
