@@ -35,6 +35,7 @@ botoes_barra = []
 
  # --- Conteúdo Central ---
 container = tk.Frame(home, bg=colors["bg_main"]); container.pack(expand=True, fill="both")
+post_box = scrolledtext.ScrolledText(None, width=42, height=10, font=font_inter, bg=colors["bg_entry"], fg=colors["fg_entry"], insertbackground=colors["fg_entry"], wrap="word"); post_box.pack(padx=10, pady=5)
 
 frames = {}; abas_principais = ["Home", "Novo Post", "Projetos", "Ranking", "Perfil"]
 for aba in abas_principais:

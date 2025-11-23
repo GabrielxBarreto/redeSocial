@@ -7,7 +7,7 @@ from tkinter import messagebox
 from ..config.settings import USER_AUTH_SERVICE
 
 # Importa a View que será aberta
-from ..views.home_view import abrir_home
+#from ..views.home_view import abrir_home
 
 def loginController(root, entry_name=None, entry_password=None):
     
@@ -36,7 +36,7 @@ def loginController(root, entry_name=None, entry_password=None):
         messagebox.showinfo("OK", "Login bem-sucedido!")
         
         # Abre a tela Home e esconde a tela de Login
-        abrir_home(name, root) 
+        #abrir_home(name, root) 
         root.withdraw()
 
 

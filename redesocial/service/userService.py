@@ -12,13 +12,13 @@ def createTimeLine(session):
     print(result.iloc[0]["post_list"])
     print(result.iloc[0]["tags"])
 
-    newPost(session)
+    new_post(session)
     name = input("quem você deseja seguir (Digite o nome): ")
     if user_df[user_df["name"]] == name:
         user_df[user_df["followers"]]
 #user_df.loc[user_df["name"] == "Gabriel", "tags"].iloc[0].append("python")
 #adicionando valores
-def newPost(session):
+def new_post(session):
     result = user_df[user_df["id"] == session]
     txt = input("Digite o que está pensando sobre o mundo da tecnologia:\n")
     tagsTxt = input("Digite as tags (#tag separado por espaço): ")

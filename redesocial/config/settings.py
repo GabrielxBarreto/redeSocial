@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import os
 import json
 import sys
-
+from redesocial.service.authService import AuthService
 # --- variaveis Globais de fontes ---
 font_roboto = None
 font_inter = None
@@ -38,57 +38,9 @@ USERS_JSON = os.path.join(PROJECT_ROOT, "usuarios.json")
 IMG_DIR = os.path.join(BASE_DIR, "views", "img")
 
 # tenta importar AuthService, senão usa SimpleUserService
-auth_service = None
-try:
-    from redesocial.service.authService import AuthService
-    auth_service = AuthService()
-    
-except (ImportError, ModuleNotFoundError, AttributeError):
-    # Se AuthService não existe ou não tem o Service usa o fallback
 
-    class SimpleUserService:
-        def __init__(self, path=USERS_JSON):
-            self.path = path
-            if not os.path.exists(self.path):
-                with open(self.path, "w") as f:
-                    json.dump({}, f)
-            self.load()
-
-        def load(self):
-            with open(self.path, "r") as f:
-                self.users = json.load(f)
-
-        def save(self):
-            with open(self.path, "w") as f:
-                json.dump(self.users, f, indent=4)
-        
-        # classe auxiliar para simular o objeto de usuario retornado
-        class UserMock:
-            def __init__(self, u, p): self.name = u; self.password = p
-
-        def get_user(self, username):
-            self.load()
-            data = self.users.get(username)
-            return self.UserMock(username, data["password"]) if data else None
-
-        # implementacao de login para o controller
-        def login(self, username, password):
-            user = self.get_user(username)
-            if user and user.password == password:
-                return user
-            return None
-
-        # implementacao de signup para o controller
-        def signup(self, username, email, password, day, month, year, gender):
-            self.load()
-            if username in self.users:
-                raise ValueError("Usuário já existe!")
-            self.users[username] = {"password": password, "email": email, "birth_day": day} 
-            self.save()
-            return self.UserMock(username, password)
-
-    auth_service = SimpleUserService()
-    
+auth_service = AuthService()
+ 
 # variável de serviço que sera importada pelos controllers
 USER_AUTH_SERVICE = auth_service
 
