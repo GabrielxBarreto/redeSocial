@@ -340,7 +340,7 @@ if __name__ == "__main__":
     
     # Config Manual do Ambiente de Teste
     root = tk.Tk()
-    root.title("Sign Up View Teste (Manual) - Rolagem Ativa")
+    root.title("Sign Up View Teste")
     
     root.geometry(f"{FRAME_WIDTH}x{FRAME_HEIGHT}")
     root.configure(bg=colors["bg_main"])
