@@ -76,7 +76,7 @@ def criar_aba_novo_post(container_frame, icones):
             new_post(session,archive,titulo+":"+conteudo)
         # Mock de publicação: Simula o que um Controller faria
             messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
-            from redesocial.views.home_feed_view import main
+            #from redesocial.views.home_feed_view import main
         # Limpar campos após a publicação
         title_entry.delete(0, tk.END)
         content_text.delete("1.0", tk.END)

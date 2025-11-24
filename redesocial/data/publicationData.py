@@ -13,51 +13,53 @@ publication_df = pd.DataFrame(columns=[
     "day",
     "times"
 ])
-publication_df.loc[len(publication_df)] = {
-    "id": 1,
-    "type": "text",
-    "midia_list": [],
-    "description": "Gabriel publicou um novo post!",
-    "user": 1,
-    "day": "2025-11-23",
-    "times": "14:35:12"
-}
-publication_df.loc[len(publication_df)] = {
-    "id": 2,
-    "type": "text",
-    "midia_list": [],
-    "description": "alan publicou um novo post!",
-    "user": 1,
-    "day": "2025-11-23",
-    "times": "14:35:12"
-}
-publication_df.loc[len(publication_df)] = {
-    "id": 3,
-    "type": "text",
-    "midia_list": [],
-    "description": "bruno publicou um novo post!",
-    "user": 1,
-    "day": "2025-11-23",
-    "times": "14:35:12"
-}
-
-publication_df.loc[len(publication_df)] = {
-    "id": 1,
-    "type": "text",
-    "midia_list": [],
-    "description": "Gabriel publicou um novo post!",
-    "user": 1,
-    "day": "2025-11-23",
-    "times": "14:35:12"
-}
-
-publication_df.loc[len(publication_df)] = {
-    "id": 4,
-    "type": "text",
-    "midia_list": [],
-    "description": "jessica publicou um novo post!",
-    "user": 1,
-    "day": "2025-11-23",
-    "times": "14:35:12"
-}
-
+#
+#publication_df.loc[len(publication_df)] = {
+#    "id": 1,
+#    "type": "text",
+#    "midia_list": [],
+#    "description": "Gabriel publicou um novo post!",
+#    "user": 1,
+#    "day": "2025-11-23",
+#    "times": "14:35:12"
+#}
+#publication_df.loc[len(publication_df)] = {
+#    "id": 2,
+#    "type": "text",
+#    "midia_list": [],
+#    "description": "alan publicou um novo post!",
+#    "user": 2,
+#    "day": "2025-11-23",
+#    "times": "14:35:12"
+#}
+#publication_df.loc[len(publication_df)] = {
+#    "id": 3,
+#    "type": "text",
+#    "midia_list": [],
+#    "description": "bruno publicou um novo post!",
+#    "user": 3,
+#    "day": "2025-11-23",
+#    "times": "14:35:12"
+#}
+#
+#publication_df.loc[len(publication_df)] = {
+#    "id": 4,
+#    "type": "text",
+#    "midia_list": [],
+#    "description": "Gabriel publicou um novo post!",
+#    "user": 1,
+#    "day": "2025-11-23",
+#    "times": "14:35:12"
+#}
+#
+#publication_df.loc[len(publication_df)] = {
+#    "id": 5,
+#    "type": "text",
+#    "midia_list": [],
+#    "description": "jessica publicou um novo post!",
+#    "user": 4,
+#    "day": "2025-11-23",
+#    "times": "14:35:12"
+#}
+#
+#

@@ -3,10 +3,14 @@ from tkinter import ttk
 if __package__:
     from redesocial.data.userData import user_df
     from redesocial.data.publicationData import publication_df
+    from redesocial.data.midiaData import midia_df
+
 
 else:
     
     from redesocial.data.publicationData import publication_df
+    from redesocial.data.userData import user_df
+    from redesocial.data.midiaData import midia_df
 
 import sys
 import os
@@ -67,16 +71,19 @@ def create_post_card(parent, post_data, icones):
     global user
     global description
     global day_time
-    id_to_name = dict(zip(user_df["id"], user_df["name"]))
-    for _, row in publication_df.iterrows():
-        username = row["user"]              # o ID do user
-        user= id_to_name.get(username, "Usuário não encontrado")
-        print(user, "publicou:", row["description"])
+
+    name = dict(zip(user_df["id"], user_df["name"]))
+    
+    post = publication_df[publication_df["id"] == post_data["id"]].iloc[0]
+    midias_ids = [m["id"] for m in post["midia_list"]]
 
 
-        id = row["id"]
-        description = row["description"]
-        day_time = row["day"] +" "+row["times"]
+    midias_do_post = midia_df[midia_df["id"].isin(midias_ids)]
+
+    user = name[post_data["user"]]
+    id = post_data["id"]
+    description = post_data["description"]
+    day_time = post_data["day"] +" "+post_data["times"]
     
 # Frame principal do post
     # Certifique-se de que colors é um dicionário ou objeto acessível por chave
@@ -130,18 +137,39 @@ def create_post_card(parent, post_data, icones):
                           justify=tk.LEFT,
                           anchor='w')
     text_label.grid(row=2, column=0, columnspan=2, sticky='ew', pady=(10, 5))
+    print("**********************************************")
+    print(midia_df)
+    print("**********************************************")
     
     # Imagem do Post (Mock)
-    if False:
-        post_image_mock = icones.get("post_image")
-        if post_image_mock:
-            # Container para centralizar a imagem
+    if len(midias_do_post) != 0:
+        image_path = midias_do_post.iloc[0]["original_path"]
+        
+        try:
+            from PIL import Image, ImageTk
+            img = Image.open(image_path)
+            img = img.resize((350, 350), Image.Resampling.LANCZOS)
+
+            photo = ImageTk.PhotoImage(img, master=parent)
+
+
+            # manter referência para evitar GC
+            card_frame.photo = photo
+
             img_container = tk.Frame(card_frame, bg=bg_frame_color)
-            img_container.grid(row=3, column=0, columnspan=2, pady=(5, 10))
-            
-            tk.Label(img_container, 
-                     image=post_image_mock, 
-                     bg=bg_entry_color).pack()
+            img_container.grid(row=3, column=0, columnspan=2, pady=10)
+
+            img_label = tk.Label(img_container, image=photo, bg=bg_entry_color)
+            img_label.image = photo  # mantém referência viva
+            img_label.pack()
+
+    
+        except Exception as e:
+            print("Erro carregando imagem:", e)
+            print("Path recebido:", image_path)
+        else:
+            print("Post sem mídia")
+        
 
     # Barra de Ações (Likes, Comentários)
     actions_frame = tk.Frame(card_frame, bg=bg_frame_color)
@@ -240,8 +268,8 @@ def HomeView(master, switch_view_callback, icones):
 
     # 4. Popula o Feed com os Cards de Post
     #troca do mock, teste pelo data frame
-    print(publication_df)
-    for post in publication_df:
+
+    for _, post in publication_df.iterrows():
         create_post_card(content_frame, post, icones)
 
     # 5. Exibir a View
@@ -251,40 +279,40 @@ def HomeView(master, switch_view_callback, icones):
 # ==========================================================================
 # TESTE (Execução Individual)
 # ==========================================================================
-if __name__ == "__main__":
-    # Usa a função de setup do utils_icons para inicializar a janela
-    test_window, root, icones = setup_test_window("Home View Teste")
-    
-    if test_window:
-        # Frame container para simular o corpo do aplicativo
-        app_body = tk.Frame(test_window, bg=colors.bg_main if hasattr(colors, 'bg_main') else colors["bg_main"])
-        app_body.pack(fill="both", expand=True)
-
-        # Função de callback de mock para a navegação
-        def mock_switch_view(view_name):
-            print(f"Navegação Mock: Trocando para {view_name}")
-
-        # Cria e exibe a view de Home
-        home_frame = HomeView(app_body, mock_switch_view, icones)
-        home_frame.pack(fill="both", expand=True)
-
-        # Mocka a BottomBar para garantir que o GC não colete os PhotoImages
-        try:
-            from utils_icons import BottomBar # Importa a barra inferior para o teste
-            current_view_state = tk.StringVar(value="Home")
-            
-            # Cria a barra, embora não seja usada para navegação real no teste, 
-            # garante que as dependências do PhotoImage sejam resolvidas.
-            bottom_bar_frame = BottomBar(test_window, mock_switch_view, icones, current_view_state)
-            bottom_bar_frame.pack(fill="x", side=tk.BOTTOM)
-        except ImportError:
-            print("BottomBar não pôde ser importada para o teste. Apenas a HomeView será exibida.")
-            
-        test_window.mainloop()
-        # Após fechar o Toplevel, certifique-se de fechar a raiz
-        try:
-            root.destroy()
-        except:
-            pass
-    else:
-        print("Falha na inicialização da janela de teste. Verifique as dependências.")
+#if __name__ == "__main__":
+#    # Usa a função de setup do utils_icons para inicializar a janela
+#    test_window, root, icones = setup_test_window("Home View Teste")
+#    
+#    if test_window:
+#        # Frame container para simular o corpo do aplicativo
+#        app_body = tk.Frame(test_window, bg=colors.bg_main if hasattr(colors, 'bg_main') else colors["bg_main"])
+#        app_body.pack(fill="both", expand=True)
+#
+#        # Função de callback de mock para a navegação
+#        def mock_switch_view(view_name):
+#            print(f"Navegação Mock: Trocando para {view_name}")
+#
+#        # Cria e exibe a view de Home
+#        home_frame = HomeView(app_body, mock_switch_view, icones)
+#        home_frame.pack(fill="both", expand=True)
+#
+#        # Mocka a BottomBar para garantir que o GC não colete os PhotoImages
+#        try:
+#            from utils_icons import BottomBar # Importa a barra inferior para o teste
+#            current_view_state = tk.StringVar(value="Home")
+#            
+#            # Cria a barra, embora não seja usada para navegação real no teste, 
+#            # garante que as dependências do PhotoImage sejam resolvidas.
+#            bottom_bar_frame = BottomBar(test_window, mock_switch_view, icones, current_view_state)
+#            bottom_bar_frame.pack(fill="x", side=tk.BOTTOM)
+#        except ImportError:
+#            print("BottomBar não pôde ser importada para o teste. Apenas a HomeView será exibida.")
+#            
+#        test_window.mainloop()
+#        # Após fechar o Toplevel, certifique-se de fechar a raiz
+#        try:
+#            root.destroy()
+#        except:
+#            pass
+#    else:
+#        print("Falha na inicialização da janela de teste. Verifique as dependências.")
