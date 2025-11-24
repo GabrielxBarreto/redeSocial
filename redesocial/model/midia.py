@@ -1,6 +1,6 @@
 class Midia:
     count = 0
-    def __init__(self, type, size, name, original_path,id_user):
+    def __init__(self, type, size, name, original_path,id_user,id_publication):
         Midia.count += 1
         self.id = Midia.count
         self._type = type
@@ -8,6 +8,7 @@ class Midia:
         self._name = name
         self._original_path = original_path
         self._id_user = id_user
+        self.id_publication = id_publication
 
     @property
     def type(self):
@@ -56,5 +57,6 @@ class Midia:
             "size": self._size,
             "name": self._name,
             "original_path": self._original_path,
-            "id_user":self._id_user
+            "id_user":self._id_user,
+            "id_publication":self.id_publication
         }

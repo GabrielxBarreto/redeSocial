@@ -8,6 +8,7 @@ midia_df = pd.DataFrame(columns=[
     "type",
     "size",
     "name",
-    "original_path"
-    "id_user"
+    "original_path",
+    "id_user",
+    "id_publication"
 ])

@@ -1,5 +1,7 @@
 from ..data.userData import user_df
 from ..data.publicationData import publication_df
+from ..data.midiaData import midia_df
+
 from ..model.publication import Publication
 from ..model.midia import Midia
 from datetime import datetime, date
@@ -47,18 +49,19 @@ def new_post(session,archive,description):
     user_df.at[idx, "tags"] = user_tags
     
     type = "text"
-    midia = Midia(format,size_bytes, name_content, archive, result.iloc[0]["id"])
-
+    midia = Midia(format,size_bytes, name_content, archive, result.iloc[0]["id"],None)
+    
     day = datetime.now().strftime("%H:%M:%S")
     times = datetime.now().strftime("%I:%M %p")
     
     publication = Publication(type, [midia], description, result.iloc[0]["id"],tags,day,times)
-    
+    midia.id_publication = publication.id
 
     publication_df.loc[len(publication_df)] = publication.to_dict()
     user_post = user_df.at[idx, "post_list"]
     user_post.extend(publication.to_dict())
     user_df.at[idx, "post_list"] = user_post
+    midia_df.loc[len(midia_df)] = midia.to_dict()
     print("________________________________________________-")
     print(publication_df)
 
