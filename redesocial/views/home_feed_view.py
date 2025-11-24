@@ -1,12 +1,20 @@
 import tkinter as tk
 from tkinter import ttk
+if __package__:
+    from redesocial.data.userData import user_df
+    from redesocial.data.publicationData import publication_df
+
+else:
+    
+    from redesocial.data.publicationData import publication_df
+
 import sys
 import os
 
 # Importa as utilidades do arquivo pai (utils_icons.py)
 # NOTA: Assumimos que utils_icons.py está no mesmo diretório ou em um caminho de módulo acessível
 try:
-    from utils_icons import (
+    from redesocial.views.utils_icons import (
         colors, 
         font_roboto_big, 
         font_roboto, 
@@ -54,8 +62,23 @@ except ImportError:
 # ==========================================================================
 def create_post_card(parent, post_data, icones):
     """Cria um cartão de post individual para o feed."""
+    print("começou!!")
+    global id
+    global user
+    global description
+    global day_time
+    id_to_name = dict(zip(user_df["id"], user_df["name"]))
+    for _, row in publication_df.iterrows():
+        username = row["user"]              # o ID do user
+        user= id_to_name.get(username, "Usuário não encontrado")
+        print(user, "publicou:", row["description"])
+
+
+        id = row["id"]
+        description = row["description"]
+        day_time = row["day"] +" "+row["times"]
     
-    # Frame principal do post
+# Frame principal do post
     # Certifique-se de que colors é um dicionário ou objeto acessível por chave
     bg_frame_color = colors.bg_frame if hasattr(colors, 'bg_frame') else colors["bg_frame"]
     fg_text_color = colors.fg_text if hasattr(colors, 'fg_text') else colors["fg_text"]
@@ -81,7 +104,7 @@ def create_post_card(parent, post_data, icones):
     
     # Nome de Usuário
     username_label = tk.Label(card_frame, 
-                              text=post_data["user"], 
+                              text=user, 
                               font=font_roboto_big, 
                               bg=bg_frame_color, 
                               fg=fg_text_color,
@@ -90,7 +113,7 @@ def create_post_card(parent, post_data, icones):
     
     # Data/Hora do Post (Mock)
     time_label = tk.Label(card_frame, 
-                          text="há 5 minutos", 
+                          text=day_time, 
                           font=font_inter, 
                           bg=bg_frame_color, 
                           fg=icon_inactive_color,
@@ -99,7 +122,7 @@ def create_post_card(parent, post_data, icones):
     
     # Texto do Post
     text_label = tk.Label(card_frame, 
-                          text=post_data["text"], 
+                          text=description, 
                           font=font_roboto, 
                           bg=bg_frame_color, 
                           fg=fg_text_color,
@@ -109,7 +132,7 @@ def create_post_card(parent, post_data, icones):
     text_label.grid(row=2, column=0, columnspan=2, sticky='ew', pady=(10, 5))
     
     # Imagem do Post (Mock)
-    if post_data["has_image"]:
+    if False:
         post_image_mock = icones.get("post_image")
         if post_image_mock:
             # Container para centralizar a imagem
@@ -143,7 +166,6 @@ def create_post_card(parent, post_data, icones):
                             activebackground=bg_entry_color, activeforeground=purple_button_color, 
                             cursor="hand2", font=font_inter)
     comment_btn.pack(side=tk.LEFT)
-
 
 # ==========================================================================
 # 2. View Principal (HomeView)
@@ -217,7 +239,9 @@ def HomeView(master, switch_view_callback, icones):
         canvas.bind_all('<Button-5>', lambda e: canvas.yview_scroll(1, "units"))
 
     # 4. Popula o Feed com os Cards de Post
-    for post in MOCK_FEED_POSTS:
+    #troca do mock, teste pelo data frame
+    print(publication_df)
+    for post in publication_df:
         create_post_card(content_frame, post, icones)
 
     # 5. Exibir a View

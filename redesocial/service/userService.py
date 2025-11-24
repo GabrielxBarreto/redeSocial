@@ -2,6 +2,15 @@ from ..data.userData import user_df
 from ..data.publicationData import publication_df
 from ..model.publication import Publication
 from ..model.midia import Midia
+from datetime import datetime, date
+
+#----teste---
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image
+#--------------
+import os
+import re
 def createTimeLine(session):
     result = user_df[user_df["id"] == session]
     print("who am I?____________________________")
@@ -18,30 +27,40 @@ def createTimeLine(session):
         user_df[user_df["followers"]]
 #user_df.loc[user_df["name"] == "Gabriel", "tags"].iloc[0].append("python")
 #adicionando valores
-def new_post(session):
+def new_post(session,archive,description):
     result = user_df[user_df["id"] == session]
-    txt = input("Digite o que está pensando sobre o mundo da tecnologia:\n")
-    tagsTxt = input("Digite as tags (#tag separado por espaço): ")
-
-    tags = tagsTxt.split()
+    tags = re.findall(r"#\w+",description)
     idx = user_df.index[user_df["id"] == session][0]
     user_tags = user_df.at[idx, "tags"]
     user_tags.extend(tags)
-
     
-    user_df.at[idx, "tags"] = user_tags
 
+    archive = filedialog.askopenfilename(
+    title="Selecione uma imagem",
+    filetypes=[("Imagens", "*.png *.jpg *.jpeg *.gif *.bmp")]
+    )
+
+    img = Image.open(archive)
+    format = img.format
+    size_bytes =  os.path.getsize(archive)
+    name_content = os.path.basename(archive)
+    user_df.at[idx, "tags"] = user_tags
+    
     type = "text"
-    midia = Midia("png",200000, "exemploFase2", "documents/redesocial/server/uploads", result.iloc[0]["id"])
-    publication = Publication(type, [midia], txt, result.iloc[0]["id"], tags)
+    midia = Midia(format,size_bytes, name_content, archive, result.iloc[0]["id"])
+
+    day = datetime.now().strftime("%H:%M:%S")
+    times = datetime.now().strftime("%I:%M %p")
+    
+    publication = Publication(type, [midia], description, result.iloc[0]["id"],tags,day,times)
+    
+
     publication_df.loc[len(publication_df)] = publication.to_dict()
     user_post = user_df.at[idx, "post_list"]
     user_post.extend(publication.to_dict())
     user_df.at[idx, "post_list"] = user_post
-
-
-    print(txt)
-    print(tags)
+    print("________________________________________________-")
+    print(publication_df)
 
 def excluirPost():
     pass

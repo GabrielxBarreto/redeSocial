@@ -1,9 +1,14 @@
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
+if __package__:
+    from redesocial.service.userService import new_post
+else:
+    from redesocial.service.userService import new_post
+
 
 # Importação direta (sem ponto) para funcionar como script autônomo
 # É ESSENCIAL que utils_icons.py esteja com a versão mais recente!
-from utils_icons import (
+from redesocial.views.utils_icons import (
     colors, font_roboto_big, font_inter, 
     setup_test_window
 )
@@ -65,10 +70,13 @@ def criar_aba_novo_post(container_frame, icones):
         if not titulo or not conteudo:
             messagebox.showerror("Erro de Publicação", "Título e Conteúdo não podem estar vazios.")
             return
-
+        else:
+            archive= None
+            session = 1
+            new_post(session,archive,titulo+":"+conteudo)
         # Mock de publicação: Simula o que um Controller faria
-        messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
-        
+            messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
+            from redesocial.views.home_feed_view import main
         # Limpar campos após a publicação
         title_entry.delete(0, tk.END)
         content_text.delete("1.0", tk.END)

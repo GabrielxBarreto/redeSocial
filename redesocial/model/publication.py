@@ -1,7 +1,7 @@
 from ..model.midia import Midia
 class Publication:
     count = 0 
-    def __init__(self, type, midia_list:list[Midia], description, user,tags_list):
+    def __init__(self, type, midia_list:list[Midia], description, user,tags_list,day,times):
         
         Publication.count += 1
         self.id = Publication.count
@@ -10,7 +10,10 @@ class Publication:
         self._description = description
         self._user = user
         self._tags_list = tags_list
+        self.day = day
+        self.times = times
 
+   
     @property
     def type(self):
         return self._type
@@ -56,8 +59,10 @@ class Publication:
             "type": self._type,
             "midia_list": [m.to_dict() for m in self._midia_list],
             "description": self._description,
-            "user_id": self._user,
-            "tags_list": self._tags_list
+            "user": self._user,
+            "tags_list": self._tags_list,
+            "day": self.day,
+            "times": self.times
 
         }
 
