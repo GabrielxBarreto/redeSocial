@@ -1,205 +1,235 @@
 import tkinter as tk
-from tkinter import scrolledtext
 from tkinter import messagebox
-from PIL import Image, ImageTk
+import os
+from PIL import Image, ImageTk 
 
-# Importações necessárias do arquivo de utilidades (utils_icons.py).
-from utils_icons import (
-    colors, font_roboto_big, font_inter, 
-    MOCK_PROJECTS_DATA, setup_test_window, ICON_SIZE_NAV
-)
+# 1. Defis de Fallback e Importação Robusta 
 
-# Constantes de layout
-PROJECT_FRAME_BG = colors["bg_frame"]
-PROJECT_BORDER_COLOR = colors["bg_main"]
 
-def criar_card_projeto(container, project_data):
-    """
-    Cria um card de projeto individual com informações detalhadas, incluindo
-    título, proprietário, descrição, status, colaboradores, tecnologia e progresso.
+# Cores e Fontes Fallback
+SOLID_GRAY_BLOCK = "#3C3C3C" 
+FALLBACK_COLORS = {
+    "bg_main": "#1e1e1e",           # Fundo Principal Escuro
+    "fg_text": "#ffffff",           # Texto Principal Branco
+    "accent_color": "#6f42c1",      # Roxo (Cor de Destaque)
+    "accent_color_hover": "#5a369a", # Roxo mais escuro para hover
+    "bg_entry": SOLID_GRAY_BLOCK,   
+    "bg_entry_border": SOLID_GRAY_BLOCK,
+    "fg_secondary": "#aaaaaa",      # Cinza claro para texto auxiliar
+    "bg_card": "#2e2e2e",           # Fundo dos cards (Posts/Projetos)
+    "signup_link_fg": "#6f42c1"     
+}
+FALLBACK_FONT_TITLE = ("Roboto", 20, "bold")
+FALLBACK_FONT_BIG = ("Roboto", 14, "bold")
+FALLBACK_FONT_DEFAULT = ("Roboto", 12)
+FALLBACK_WIDTH, FALLBACK_HEIGHT = 400, 600
+
+# Tentativa de importação de utils_icons.py
+try:
+    from utils_icons import (
+        colors,
+        font_roboto_big,
+        font_roboto,
+        font_roboto_title,
+        FRAME_WIDTH,
+        FRAME_HEIGHT,
+        setup_test_window,
+    )
+    # Garante que todas as cores necessárias estão presentes no dict 'colors'
+    for key, value in FALLBACK_COLORS.items():
+        if key not in colors:
+             colors[key] = value
+
+except ImportError:
+    print("Aviso: Falha ao importar utils_icons.py. Usando cores e fontes padrão.")
+    colors = FALLBACK_COLORS
+    font_roboto_title = FALLBACK_FONT_TITLE
+    font_roboto_big = FALLBACK_FONT_BIG
+    font_roboto = FALLBACK_FONT_DEFAULT
+    FRAME_WIDTH = FALLBACK_WIDTH
+    FRAME_HEIGHT = FALLBACK_HEIGHT
+
+
+# View Principal: ProjectsView
+
+class ProjectsView(tk.Frame):
+    """Tela para visualizar e adicionar projetos do GitHub."""
     
-    Args:
-        container (tk.Widget): O widget pai onde o projeto será colocado.
-        project_data (dict): Dicionário contendo dados do projeto.
+    def __init__(self, master, switch_view_callback=None, *args, **kwargs):
+        super().__init__(master, *args, **kwargs)
+        self.switch_view_callback = switch_view_callback
         
-    Returns:
-        tk.Frame: O frame do card do projeto.
-    """
-    card = tk.Frame(container, bg=PROJECT_FRAME_BG, padx=15, pady=15, 
-                    highlightbackground=PROJECT_BORDER_COLOR, highlightthickness=1, borderwidth=0)
-    card.pack(fill='x', padx=15, pady=(5, 10))
-
-    # --- 1. Título e Proprietário ---
-    title_frame = tk.Frame(card, bg=PROJECT_FRAME_BG)
-    title_frame.pack(fill='x', pady=(0, 5))
-    
-    tk.Label(title_frame, text=project_data["title"], 
-             font=font_roboto_big, bg=PROJECT_FRAME_BG, fg=colors["fg_text"], 
-             anchor="w").pack(side="left", fill="x", expand=True)
-
-    tk.Label(title_frame, text=f"@{project_data['owner']}", 
-             font=font_inter, bg=PROJECT_FRAME_BG, fg=colors["icon_inactive_fg"], 
-             anchor="e").pack(side="right")
-
-    # --- 2. Descrição ---
-    tk.Label(card, text=project_data["description"], 
-             font=font_inter, bg=PROJECT_FRAME_BG, fg=colors["fg_entry"], 
-             wraplength=350, justify="left", anchor="w").pack(fill='x', pady=(5, 10))
-
-    # --- 3. Detalhes (Status, Colaboradores, Tech) ---
-    details_frame = tk.Frame(card, bg=PROJECT_FRAME_BG)
-    details_frame.pack(fill='x', pady=(5, 0))
-
-    # Função auxiliar para criar Labels de detalhes
-    def criar_detail_label(parent, key, value, color):
-        tk.Label(parent, text=f"{key}: {value}", font=font_inter, 
-                 bg=PROJECT_FRAME_BG, fg=color, 
-                 anchor="w").pack(side="left", padx=(0, 15))
-
-    # Lógica de cores para o Status
-    if project_data["status"] == "Concluído":
-        status_color = "#32CD32" # Verde Lima
-    elif project_data["status"] == "Em Andamento":
-        status_color = "#FFA500" # Laranja
-    else:
-        status_color = colors["purple_button"] # Roxo padrão
+        self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        self.pack_propagate(False)
         
-    criar_detail_label(details_frame, "Status", project_data["status"], status_color)
-    criar_detail_label(details_frame, "Colaboradores", project_data["collaborators"], colors["fg_text"])
-    criar_detail_label(details_frame, "Tecnologia", project_data["tech"], colors["fg_text"])
-    
-    # --- 4. Barra de Progresso (Simples) ---
-    progress_val = project_data["progress"]
-    progress_frame = tk.Frame(card, bg=PROJECT_FRAME_BG, pady=10)
-    progress_frame.pack(fill='x')
-    
-    # Canvas para a barra de progresso visual
-    bar_width = 370 
-    progress_bar = tk.Canvas(progress_frame, height=8, width=bar_width, bg=colors["bg_entry"], highlightthickness=0)
-    progress_bar.pack(side="left", fill="x", expand=True)
-    
-    fill_width = (progress_val / 100) * bar_width
-    progress_bar.create_rectangle(0, 0, fill_width, 8, fill=colors["purple_button"], outline="")
-    
-    tk.Label(progress_frame, text=f"{progress_val}%", font=("Inter", 8, "bold"), 
-             bg=PROJECT_FRAME_BG, fg=colors["fg_text"], padx=5).pack(side="right")
+        # Simulação de dados de projetos
+        self.projects_data = [
+            {"title": "MIAU App Tkinter", "user": "alan lindo", "link": "github.com/miau/app", "desc": "Projeto da rede social, focado em Tkinter e Pygame."},
+            {"title": "Algoritmos de IA", "user": "Outro Dev", "link": "github.com/dev/ia", "desc": "Implementação de redes neurais simples em Python."},
+        ]
 
+        self._create_widgets()
 
-    return card
-
-
-def criar_aba_projetos(container_frame, icones): # <-- Ícones agora são um argumento obrigatório
-    """
-    Cria e retorna o frame principal da aba Projetos (apenas o conteúdo rolável).
-    """
-    f = tk.Frame(container_frame, bg=colors["bg_main"])
-    f.grid_columnconfigure(0, weight=1)
-
-    # Título da Tela
-    tk.Label(f, text="Projetos", font=font_roboto_big, bg=colors["bg_main"], fg=colors["fg_text"]).grid(row=0, column=0, pady=(10, 5), sticky="ew")
-
-    # --- Área de Rolagem para a Lista de Projetos ---
-    canvas = tk.Canvas(f, bg=colors["bg_main"], highlightthickness=0)
-    canvas.grid(row=1, column=0, sticky="nsew", padx=5)
-    f.grid_rowconfigure(1, weight=1) 
-
-    scrollbar = tk.Scrollbar(f, orient="vertical", command=canvas.yview, bg=colors["bg_main"])
-    scrollbar.grid(row=1, column=1, sticky="ns")
-
-    canvas.configure(yscrollcommand=scrollbar.set)
-
-    # Frame interno onde os projetos serão colocados
-    projects_frame = tk.Frame(canvas, bg=colors["bg_main"])
-    # Largura inicial para o teste
-    canvas.create_window((0, 0), window=projects_frame, anchor="nw", width=400) 
-
-    def on_frame_configure(event):
-        """Ajusta a região de rolagem do canvas."""
-        canvas.configure(scrollregion=canvas.bbox("all"))
+    def _create_widgets(self):
+        # Frame do Cabeçalho
+        header_frame = tk.Frame(self, bg=colors["bg_main"], padx=10, pady=15)
+        header_frame.pack(fill="x")
         
-    projects_frame.bind("<Configure>", on_frame_configure)
-    
-    def on_canvas_resize(event):
-        """Ajusta a largura do frame interno."""
-        canvas_width = event.width
-        projects_frame.config(width=canvas_width - 20) 
+        tk.Label(header_frame,
+                 text="Projects ",
+                 font=font_roboto_title,
+                 fg=colors["accent_color"],
+                 bg=colors["bg_main"]).pack(side="left")
         
-    canvas.bind('<Configure>', on_canvas_resize)
+        # Botão para Adicionar Novo Projeto 
+        add_button = tk.Button(header_frame,
+                               
+                               command=self._show_add_project_placeholder,
+                               text="New Project",
+                               bg=colors["accent_color"],
+                               fg=colors["fg_text"],
+                               font=font_roboto,
+                               bd=0,
+                               padx=10,
+                               pady=5,
+                               activebackground=colors["accent_color_hover"],
+                               activeforeground=colors["fg_text"],
+                               cursor="hand2")
+        add_button.pack(side="right")
 
-    # Popula a lista com os mocks de projetos
-    for project in MOCK_PROJECTS_DATA:
-        criar_card_projeto(projects_frame, project)
-
-    return f
-
-
-def criar_bottom_bar(container_frame, icones, current_tab="Projetos"):
-    """
-    Cria a barra de navegação fixa na parte inferior.
-    """
-    nav_frame = tk.Frame(container_frame, bg=colors["bottom_bar_bg"], bd=0, relief="flat")
-    nav_frame.pack(side="bottom", fill="x", ipady=5)
-    nav_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
-    
-    nav_items = ["Home", "Novo Post", "Projetos", "Ranking", "Perfil"]
-    
-    def on_nav_click(item_name):
-        # MOCK: Função para simular a navegação
-        messagebox.showinfo("Navegação (Mock)", f"Função para ir para '{item_name}' seria chamada aqui.")
-
-    for i, item_name in enumerate(nav_items):
-        icon_image = icones[item_name]
         
-        is_active = (item_name == current_tab)
-        text_color = colors["icon_active_fg"] if is_active else colors["icon_inactive_fg"]
+        self._create_scrollable_list()
         
-        item_frame = tk.Frame(nav_frame, bg=colors["bottom_bar_bg"])
-        item_frame.grid(row=0, column=i, sticky="nsew")
         
-        nav_button = tk.Button(item_frame, 
-            image=icon_image, 
-            command=lambda name=item_name: on_nav_click(name),
-            bd=0, 
-            relief="flat", 
-            bg=colors["bottom_bar_bg"], 
-            activebackground=colors["bottom_bar_bg"],
-            compound="top" 
+        self._load_projects()
+
+    def _create_scrollable_list(self):
+        
+        self.canvas = tk.Canvas(self, bg=colors["bg_main"], highlightthickness=0)
+        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview, bg=colors["bg_main"])
+        
+        
+        self.projects_container = tk.Frame(self.canvas, bg=colors["bg_main"])
+        
+        # Config do Canvas
+        self.projects_container.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
         )
-        nav_button.image = icon_image 
-        nav_button.pack(pady=(5, 2)) 
+        
+        self.canvas.create_window((0, 0), window=self.projects_container, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+        
+        
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-        label = tk.Label(item_frame, text=item_name, font=("Inter", 8), bg=colors["bottom_bar_bg"], fg=text_color)
-        label.pack()
+    def _on_mousewheel(self, event):
+        """Permite rolar o Canvas usando o scroll do mouse."""
+        # Se for no Windows/Linux, é event.delta. No Mac, pode ser diferente, mas essa é a solução padrão.
+        if event.num == 5 or event.delta == -120:  
+            self.canvas.yview_scroll(1, "unit")
+        elif event.num == 4 or event.delta == 120:  
+            self.canvas.yview_scroll(-1, "unit")
+        
+    def _load_projects(self):
+        # Limpa projetos existentes
+        for widget in self.projects_container.winfo_children():
+            widget.destroy()
+            
+        if not self.projects_data:
+            tk.Label(self.projects_container,
+                     text="Nenhum projeto encontrado. Adicione o primeiro!",
+                     bg=colors["bg_main"],
+                     fg=colors["fg_secondary"],
+                     font=font_roboto).pack(pady=50)
+            return
+
+        for project in self.projects_data:
+            self._create_project_card(project)
+            
+    def _create_project_card(self, project):
+        """Cria um card visual para um projeto."""
+        
+        card = tk.Frame(self.projects_container, 
+                        bg=colors["bg_card"], 
+                        padx=15, 
+                        pady=15, 
+                        bd=0,
+                        relief="flat")
+        card.pack(fill="x", padx=10, pady=8)
+        
+        # Título e Usuário
+        title_frame = tk.Frame(card, bg=colors["bg_card"])
+        title_frame.pack(fill="x", pady=(0, 5))
+        
+        tk.Label(title_frame,
+                 text=project["title"],
+                 font=font_roboto_big,
+                 fg=colors["accent_color"],
+                 bg=colors["bg_card"],
+                 anchor="w").pack(side="left")
+        
+        tk.Label(title_frame,
+                 text=f'por {project["user"]}',
+                 font=font_roboto,
+                 fg=colors["fg_secondary"],
+                 bg=colors["bg_card"],
+                 anchor="e").pack(side="right")
+                 
+        # Descrição
+        tk.Label(card,
+                 text=project["desc"],
+                 font=font_roboto,
+                 fg=colors["fg_text"],
+                 bg=colors["bg_card"],
+                 wraplength=FRAME_WIDTH - 50,
+                 justify="left",
+                 anchor="w").pack(fill="x", pady=5)
+                 
+        # Link do GitHub
+        link_label = tk.Label(card,
+                              text=f'Link: {project["link"]}',
+                              font=font_roboto,
+                              fg=colors["signup_link_fg"], 
+                              bg=colors["bg_card"],
+                              cursor="hand2",
+                              anchor="w")
+        link_label.pack(fill="x", pady=(5, 0))
+       
+        link_label.bind("<Button-1>", lambda e: messagebox.showinfo("Abrir Link", f"Simulação: Abrir link no navegador:\n{project['link']}"))
 
 
-def criar_tela_principal_com_nav(window, icones):
-    """
-    Cria a estrutura principal (Conteúdo + Bottom Bar).
-    """
-    # 1. Cria a BARRA INFERIOR (fixa na parte inferior)
-    criar_bottom_bar(window, icones, current_tab="Projetos")
+    def _show_add_project_placeholder(self):
+        """Exibe uma mensagem placeholder para a funcionalidade de adicionar projeto."""
+        messagebox.showinfo("New Project", "Implementação da função de adicionar projeto.")
+        
+ 
 
-    # 2. Cria o frame de CONTEÚDO (ocupa o espaço restante)
-    content_frame = tk.Frame(window, bg=colors["bg_main"])
-    content_frame.pack(fill="both", expand=True) 
-    
-    # 3. Adiciona a View de Projetos ao frame de CONTEÚDO
-    projects_view = criar_aba_projetos(content_frame, icones) # <-- Ícones são passados aqui
-    projects_view.pack(fill="both", expand=True)
+#  Teste de Execução Individual 
 
-# --- BLOCO DE TESTE INDIVIDUAL ---
 if __name__ == "__main__":
-    # setup_test_window retorna 3 valores: test_window, root, icones_mock
-    try:
-        test_window, root, icones_mock = setup_test_window("Teste Individual: Aba Projetos") 
-        
-        # Passa a janela principal e os ícones para a nova função de estrutura
-        criar_tela_principal_com_nav(test_window, icones_mock)
-        
-        root.mainloop()
-    except NameError:
-        print("ERRO: A função 'setup_test_window' ou outras utilidades não foram encontradas.")
-        print("Certifique-se de que o 'utils_icons.py' está no mesmo diretório.")
-    except Exception as e:
-        # Erro genérico de Tkinter
-        print(f"Erro ao iniciar a janela de teste: {e}")
+    
+    # Config do ambiente de teste 
+    root = tk.Tk()
+    root.title("Projects View Teste")
+    root.geometry(f"{FALLBACK_WIDTH}x{FALLBACK_HEIGHT}")
+    
+    test_frame = tk.Frame(root)
+    test_frame.pack(fill="both", expand=True)
+    
+    def switch_view_mock(view_name):
+        messagebox.showinfo("Navegação", f"Navegar para a View: {view_name}")
+    
+    projects_app = ProjectsView(
+        test_frame,
+        switch_view_mock
+    )
+    projects_app.pack(fill="both", expand=True)
+    
+    root.mainloop()
