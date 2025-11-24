@@ -2,27 +2,30 @@ import tkinter as tk
 from tkinter import messagebox
 import sys
 
-# ==============================================================================
-# 1. Defs de Fallback e Importação Robusta
-# ==============================================================================
 
-# Defs de Fallback caso o utils_icons não forneça tudo
+# 1. Defs de Fallback 
+
+
+
 FALLBACK_COLORS = {
-    "bg_main": "#1e1e1e",
+    "bg_main": "#1A1A1A",            
     "fg_text": "#ffffff",
-    "accent_color": "#6f42c1", 
-    "accent_color_hover": "#5a369a",
-    "bg_entry": "#333333",
-    "bg_entry_border": "#6f42c1", 
+    "accent_color": "#6F42C1",       # Roxo Botão
+    "accent_color_hover": "#5A369A", 
+    "bg_entry": "#3C3C3C",           
+    "bg_entry_border": "#3C3C3C",    
     "fg_secondary": "#aaaaaa",
     "icon_active_fg": "#ffffff",
 }
+# --- Fim das alterações de cor ---
+
 FALLBACK_FONT_BIG = ("Roboto", 16, "bold")
 FALLBACK_FONT_DEFAULT = ("Roboto", 12)
+FALLBACK_FONT_ENTRY = ("Roboto", 14) 
 FALLBACK_FONT_SMALL = ("Inter", 10)
 FALLBACK_WIDTH, FALLBACK_HEIGHT = 400, 600
 
-# Tenta import do utils_icons, definindo fallbacks se a importação falhar
+# Tenta importar do utils_icons, definindo fallbacks se a importação falhar
 try:
     from utils_icons import (
         colors, 
@@ -34,8 +37,10 @@ try:
         setup_test_window
     )
     
-    if "accent_color" not in colors:
-        colors["accent_color"] = FALLBACK_COLORS["accent_color"]
+    font_entry = ("Roboto", 14)
+    
+    # Se importado, sobrescreve as cores do utils_icons
+    colors.update(FALLBACK_COLORS)
 
 except ImportError:
     # Se o utils_icons falhar completamente, usamos os fallbacks
@@ -43,12 +48,13 @@ except ImportError:
     colors = FALLBACK_COLORS
     font_roboto_big = FALLBACK_FONT_BIG
     font_roboto = FALLBACK_FONT_DEFAULT
+    font_entry = FALLBACK_FONT_ENTRY 
     font_inter_small = FALLBACK_FONT_SMALL
     FRAME_WIDTH = FALLBACK_WIDTH
     FRAME_HEIGHT = FALLBACK_HEIGHT
     setup_test_window = None 
 
-
+# Garante que a cor de borda exista 
 FALLBACK_ENTRY_BORDER_COLOR = colors.get("accent_color", FALLBACK_COLORS["accent_color"]) 
 
 
@@ -69,12 +75,12 @@ class CustomEntry(tk.Frame):
         self.var = tk.StringVar()
         
         
-        self.entry_border_color = colors.get("bg_entry_border", FALLBACK_ENTRY_BORDER_COLOR)
-        
+        self.entry_border_color = colors["bg_entry_border"] 
+
         self._create_widgets()
 
     def _create_widgets(self):
-        
+       
         tk.Label(self, 
                  text=self.label_text, 
                  font=font_roboto, 
@@ -82,22 +88,24 @@ class CustomEntry(tk.Frame):
                  fg=colors["fg_text"],
                  anchor="w").pack(fill="x", pady=(5, 2))
 
-        # Frame para a borda arredondada do campo de entrada
-        entry_container = tk.Frame(self, bg=self.entry_border_color, height=40)
-        entry_container.pack(fill="x", ipady=1, pady=(0, 15))
+       
+        entry_container = tk.Frame(self, bg=self.entry_border_color, height=50) 
+        entry_container.pack(fill="x", ipady=3, pady=(0, 15))
         entry_container.pack_propagate(False) 
 
         # Campo de Entrada 
         self.entry_widget = tk.Entry(entry_container,
                                      textvariable=self.var,
-                                     font=font_roboto,
+                                     font=font_entry,
                                      bg=colors.get("bg_entry", FALLBACK_COLORS["bg_entry"]),
                                      fg=colors["fg_text"],
                                      insertbackground=colors["fg_text"], 
-                                     bd=0,
+                                     bd=0, 
                                      highlightthickness=0) 
         
-       
+        entry_y_padding = 5 
+        
+        
         if self.is_password:
             self.entry_widget.config(show="*" if not self.show_password else "")
         
@@ -110,14 +118,15 @@ class CustomEntry(tk.Frame):
         self.entry_widget.bind("<FocusIn>", self._clear_placeholder)
         self.entry_widget.bind("<FocusOut>", self._restore_placeholder)
         
-       
+        
         entry_xpad = 5
         if self.is_password:
-            
-            self.entry_widget.pack(side=tk.LEFT, fill="x", expand=True, padx=(entry_xpad, 0))
+           
+            self.entry_widget.pack(side=tk.LEFT, fill="x", expand=True, padx=(entry_xpad, 0), pady=entry_y_padding)
             self._create_password_toggle_button(entry_container)
         else:
-            self.entry_widget.pack(side=tk.LEFT, fill="x", expand=True, padx=(entry_xpad, 5))
+            
+            self.entry_widget.pack(side=tk.LEFT, fill="x", expand=True, padx=(entry_xpad, 5), pady=entry_y_padding)
 
     def _clear_placeholder(self, event):
         """Limpa o placeholder quando o campo recebe foco."""
@@ -125,7 +134,7 @@ class CustomEntry(tk.Frame):
             self.entry_widget.delete(0, tk.END)
             self.entry_widget.config(fg=colors["fg_text"])
             
-          
+            
             if self.is_password and not self.show_password:
                 self.entry_widget.config(show="*")
 
@@ -135,13 +144,13 @@ class CustomEntry(tk.Frame):
             self.entry_widget.insert(0, self.placeholder)
             self.entry_widget.config(fg=colors.get("fg_secondary", FALLBACK_COLORS["fg_secondary"]))
             
-            
+           
             if self.is_password:
                 self.entry_widget.config(show="")
 
     def _create_password_toggle_button(self, master):
         """Cria o botão de mostrar/esconder senha."""
-       
+        
         self.toggle_btn = tk.Label(master, 
                                    text="👁️", 
                                    font=("Arial", 14), 
@@ -149,7 +158,7 @@ class CustomEntry(tk.Frame):
                                    fg=colors.get("fg_secondary", FALLBACK_COLORS["fg_secondary"]),
                                    cursor="hand2")
         self.toggle_btn.bind("<Button-1>", self._toggle_password_visibility)
-        self.toggle_btn.pack(side=tk.RIGHT, padx=5)
+        self.toggle_btn.pack(side=tk.RIGHT, padx=5, pady=5) 
 
     def _toggle_password_visibility(self, event):
         """Alterna a visibilidade da senha."""
@@ -157,7 +166,7 @@ class CustomEntry(tk.Frame):
         if self.show_password:
             self.entry_widget.config(show="")
             
-            self.toggle_btn.config(text="🔒", fg=colors.get("icon_active_fg", colors["accent_color"]))
+            self.toggle_btn.config(text="🔒", fg=colors.get("icon_active_fg", colors["fg_text"]))
         else:
             self.entry_widget.config(show="*")
             
@@ -194,16 +203,17 @@ class SignupView(tk.Frame):
         header_frame = tk.Frame(content_frame, bg=colors["bg_main"])
         header_frame.pack(fill="x", pady=(0, 20))
         
-        # Botão de Voltar 
+        # Botão de Voltar
         back_button = tk.Button(header_frame, 
-                                 text="<",
+                                 text="<", 
                                  command=self._go_back,
                                  bd=0, 
                                  bg=colors["bg_main"],
                                  fg=colors["fg_text"],
                                  font=font_roboto_big,
                                  activebackground=colors["bg_main"],
-                                 activeforeground=colors.get("icon_active_fg", colors["accent_color"]),
+                                
+                                 activeforeground=colors.get("fg_secondary", colors["fg_text"]), 
                                  cursor="hand2")
         
         if self.icones.get("back_icon"):
@@ -212,14 +222,14 @@ class SignupView(tk.Frame):
         
         back_button.pack(side=tk.LEFT, anchor="w")
 
-        # Título
+        
         tk.Label(header_frame, 
                  text="Crie sua conta", 
                  font=font_roboto_big, 
                  bg=colors["bg_main"], 
                  fg=colors["fg_text"]).pack(side=tk.LEFT, padx=(10, 0), anchor="w")
         
-        #  Campos de Entrada 
+        # 2. Campos de Entrada 
 
         form_frame = content_frame 
 
@@ -247,17 +257,16 @@ class SignupView(tk.Frame):
         date_frame.pack(fill="x", pady=(5, 10))
 
         # Títulos dos campos de data
-       
         self.entry_day = CustomEntry(date_frame, "Dia", "DD")
         self.entry_month = CustomEntry(date_frame, "Mês", "MM")
         self.entry_year = CustomEntry(date_frame, "Ano", "AAAA")
 
-        # Configuração do Pack para manter os campos lado a lado
+        
         self.entry_day.pack(side=tk.LEFT, fill="x", expand=True, padx=(0, 10))
         self.entry_month.pack(side=tk.LEFT, fill="x", expand=True, padx=(0, 10))
         self.entry_year.pack(side=tk.LEFT, fill="x", expand=True)
 
-        # Botão de Cadastro
+        # Botão de Cadastro 
         register_button = tk.Button(form_frame, 
                                      text="Criar Conta", 
                                      command=self._handle_signup,
@@ -307,7 +316,7 @@ class SignupView(tk.Frame):
             messagebox.showerror("Erro de Cadastro", "E-mail inválido.")
             return
 
-     
+      
         messagebox.showinfo("Sucesso", f"Conta criada para o usuário: {user}!")
         
         # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
@@ -321,18 +330,18 @@ class SignupView(tk.Frame):
 
 if __name__ == "__main__":
     
-    # Configuração do ambiente de teste
+    # 1. Configuração do ambiente de teste com setup_test_window
     if setup_test_window:
         try:
             test_window, root, icones = setup_test_window("Sign Up View Teste")
         except Exception as e:
             
             print(f"Erro ao usar setup_test_window: {e}. Usando setup manual.")
-            test_window = None 
+            test_window = None # Flag para setup manual
 
-    # Configuração Manual 
+    # Configuração Manual
     if not setup_test_window or not 'root' in locals():
-        # Usa o setup manual e os fallbacks definidos no topo do arquivo
+        
         root = tk.Tk()
         root.title("Sign Up View Teste (Manual)")
         
@@ -355,7 +364,7 @@ if __name__ == "__main__":
                  fg=colors["fg_text"]).pack(pady=FRAME_HEIGHT / 2 - 50)
         
     
-    # Inicia a aplicação com a SignupView
+
     signup_app = SignupView(
         test_window, 
         switch_view_mock, 
@@ -363,5 +372,5 @@ if __name__ == "__main__":
     )
     signup_app.pack(fill="both", expand=True)
     
-  
+    
     root.mainloop()
