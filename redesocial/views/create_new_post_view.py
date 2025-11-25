@@ -5,98 +5,101 @@ if __package__:
 else:
     from redesocial.service.userService import new_post
 
+from redesocial.views.utils_icons import colors, font_roboto_big, font_inter, setup_test_window
 
-# Importação direta (sem ponto) para funcionar como script autônomo
-# É ESSENCIAL que utils_icons.py esteja com a versão mais recente!
-from redesocial.views.utils_icons import (
-    colors, font_roboto_big, font_inter, 
-    setup_test_window
-)
-
-def criar_aba_novo_post(container_frame, icones):
+if "accent_color" not in colors:
+    colors["accent_color"] = "#6f42c1" 
+if "accent_color_hover" not in colors:
+    colors["accent_color_hover"] = "#5a369a"
+class NovoPostView(tk.Frame):
     """
-    Cria e retorna o frame da aba Novo Post.
-
-    Args:
-        container_frame (tk.Widget): O widget pai onde o frame será colocado.
-        icones (dict): Dicionário contendo os ícones carregados (não usado diretamente, mas passado para fins de consistência).
-
-    Returns:
-        tk.Frame: O frame da aba Novo Post.
+    Tela/Frame para criar um novo post.
+    Pode ser chamado pelo main.py com switch_view.
     """
-    
-    f = tk.Frame(container_frame, bg=colors["bg_frame"])
-    f.grid_rowconfigure(2, weight=1) # Faz com que a área de conteúdo ocupe o espaço
-    f.grid_columnconfigure(0, weight=1)
 
-    # Título da Tela
-    tk.Label(f, text="Criar Novo Post", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).grid(row=0, column=0, pady=10, sticky="ew")
+    def __init__(self, master, icones=None, session_id=1, switch_view_callback = None,*args, **kwargs):
+        super().__init__(master, bg=colors["bg_frame"], *args, **kwargs)
+        self.switch_view_callback = switch_view_callback
+        self.icones = icones or {}
+        self.session_id = session_id  # id de usuário/logado (mock)
+        self.pack_propagate(False)
+        self._create_widgets()
 
-    # Frame de entrada de dados (ocupa a maior parte do espaço)
-    form_frame = tk.Frame(f, bg=colors["bg_frame"])
-    form_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
-    form_frame.grid_columnconfigure(0, weight=1)
-    
-    # Faz com que a área de texto dentro do form_frame se expanda
-    form_frame.grid_rowconfigure(3, weight=1) 
+    def _create_widgets(self):
+        # Título da Tela
+        tk.Label(self, text="Criar Novo Post", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).grid(row=0, column=0, pady=10, sticky="ew")
 
-    # Label e Campo para Título/Assunto
-    tk.Label(form_frame, text="Título/Assunto:", bg=colors["bg_frame"], fg=colors["fg_text"], font=font_inter).grid(row=0, column=0, sticky="w", pady=(0, 5))
-    title_entry = tk.Entry(form_frame, bg=colors["bg_entry"], fg=colors["fg_entry"], insertbackground=colors["fg_entry"], font=font_inter, relief="flat")
-    title_entry.grid(row=1, column=0, sticky="ew", ipady=5)
+        # Frame de formulário
+        form_frame = tk.Frame(self, bg=colors["bg_frame"])
+        form_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        form_frame.grid_columnconfigure(0, weight=1)
+        form_frame.grid_rowconfigure(3, weight=1)  # para expandir área de texto
 
-    # Label e Área de Texto para Conteúdo
-    tk.Label(form_frame, text="Conteúdo:", bg=colors["bg_frame"], fg=colors["fg_text"], font=font_inter).grid(row=2, column=0, sticky="w", pady=(15, 5))
-    content_text = scrolledtext.ScrolledText(form_frame, height=10, width=40, font=font_inter,
-                                             bg=colors["bg_entry"], fg=colors["fg_entry"], 
-                                             insertbackground=colors["fg_entry"], wrap="word", relief="flat", borderwidth=0, highlightthickness=0)
-    content_text.grid(row=3, column=0, sticky="nsew")
-    
-    # Botão para Anexar Imagem (Mock)
-    def anexar_imagem():
+        # Campo Título
+        tk.Label(form_frame, text="Título/Assunto:", bg=colors["bg_frame"], fg=colors["fg_text"], font=font_inter).grid(row=0, column=0, sticky="w", pady=(0,5))
+        self.title_entry = tk.Entry(form_frame, bg=colors["bg_entry"], fg=colors["fg_entry"], insertbackground=colors["fg_entry"], font=font_inter, relief="flat")
+        self.title_entry.grid(row=1, column=0, sticky="ew", ipady=5)
+
+        # Campo Conteúdo
+        tk.Label(form_frame, text="Conteúdo:", bg=colors["bg_frame"], fg=colors["fg_text"], font=font_inter).grid(row=2, column=0, sticky="w", pady=(15,5))
+        self.content_text = scrolledtext.ScrolledText(form_frame, height=10, width=40, font=font_inter,
+                                                      bg=colors["bg_entry"], fg=colors["fg_entry"],
+                                                      insertbackground=colors["fg_entry"], wrap="word", relief="flat", borderwidth=0, highlightthickness=0)
+        self.content_text.grid(row=3, column=0, sticky="nsew")
+
+        # Botão Anexar Imagem (mock)
+        btn_image = tk.Button(form_frame, text="Anexar Imagem", command=self.anexar_imagem,
+                              bg=colors["bg_button"], fg=colors["fg_text"],
+                              activebackground=colors["active_bg_button"], relief="flat",
+                              font=font_inter)
+        btn_image.grid(row=4, column=0, sticky="ew", pady=(15,5))
+
+        # Botão Publicar
+        btn_publicar = tk.Button(self, text="PUBLICAR", command=self.publicar_post,
+                                 bg=colors["purple_button"], fg=colors["fg_text"],
+                                 activebackground=colors["active_bg_button"], relief="flat",
+                                 font=font_roboto_big, height=2)
+        btn_publicar.grid(row=2, column=0, sticky="sEW", padx=20, pady=(0,20))
+        btn_voltar = tk.Button(self, text="⬅ Voltar para Home", command=self._voltar_home,
+                       bg=colors.get("accent_color", "#6f42c1"),
+                       fg=colors.get("fg_text", "#ffffff"),
+                       activebackground=colors.get("accent_color_hover", "#5a369a"),
+                       font=font_roboto_big, height=2, relief="flat", cursor="hand2")
+        btn_voltar.grid(row=3, column=0, sticky="sEW", padx=20, pady=(0,20))
+    def _voltar_home(self):
+        """Chama a callback para voltar para Home."""
+        if self.switch_view_callback:
+            self.switch_view_callback("home")
+        else:
+            messagebox.showinfo("Navegação Mock", "Voltando para a Home!")
+    def anexar_imagem(self):
+        """Mock: função para anexar imagem."""
         messagebox.showinfo("Anexar Imagem (Mock)", "Função para anexar imagem será implementada na camada de Controller.")
 
-    btn_image = tk.Button(form_frame, text="Anexar Imagem", command=anexar_imagem,
-                          bg=colors["bg_button"], fg=colors["fg_text"], 
-                          activebackground=colors["active_bg_button"], relief="flat", 
-                          font=font_inter)
-    btn_image.grid(row=4, column=0, sticky="ew", pady=(15, 5))
+    def publicar_post(self):
+        """Valida e publica o post chamando o service."""
+        titulo = self.title_entry.get().strip()
+        conteudo = self.content_text.get("1.0", tk.END).strip()
 
-    # Botão Publicar
-    def publicar_post():
-        titulo = title_entry.get().strip()
-        conteudo = content_text.get("1.0", tk.END).strip()
-        
         if not titulo or not conteudo:
             messagebox.showerror("Erro de Publicação", "Título e Conteúdo não podem estar vazios.")
             return
-        else:
-            archive= None
-            session = 1
-            new_post(session,archive,titulo+":"+conteudo)
-        # Mock de publicação: Simula o que um Controller faria
-            messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
-            #from redesocial.views.home_feed_view import main
-        # Limpar campos após a publicação
-        title_entry.delete(0, tk.END)
-        content_text.delete("1.0", tk.END)
         
-    btn_publicar = tk.Button(f, text="PUBLICAR", command=publicar_post,
-                             bg=colors["purple_button"], fg=colors["fg_text"], 
-                             activebackground=colors["active_bg_button"], relief="flat", 
-                             font=font_roboto_big, height=2)
-    # sticky="sEW" para grudar no fundo e expandir horizontalmente
-    btn_publicar.grid(row=2, column=0, sticky="sEW", padx=20, pady=(0, 20)) 
-    
-    return f
+        archive = None  # mock de arquivo
+        new_post(self.session_id, archive, f"{titulo}:{conteudo}")
+
+        messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
+
+        # Limpar campos
+        self.title_entry.delete(0, tk.END)
+        self.content_text.delete("1.0", tk.END)
+
 
 # --- BLOCO DE TESTE INDIVIDUAL ---
 if __name__ == "__main__":
-    # Garante que setup_test_window retorna 3 valores (test_window, root, icones_mock)
-    test_window, root, icones_mock = setup_test_window("Teste Individual: Novo Post") 
-    
-    # Passa os ícones carregados para a função de criação da aba
-    frame = criar_aba_novo_post(test_window, icones_mock)
+    test_window, root, icones_mock = setup_test_window("Teste Individual: Novo Post")
+
+    frame = NovoPostView(test_window, icones_mock)
     frame.pack(fill="both", expand=True)
-    
+
     root.mainloop()

@@ -131,10 +131,10 @@ class BottomBar(tk.Frame):
         
         # Definição dos Itens da Barra
         nav_items = {
-            "Home": ("home_icon", "Home", lambda: switch_view_callback("Home")), 
-            "Novo Post": ("new_post_icon", "Novo Post", lambda: self._show_mock_action("Novo Post")),
-            "Projetos": ("projects_icon", "Projetos", lambda: self._show_mock_action("Projetos")),
-            "Ranking": ("ranking_icon", "Ranking", lambda: self._show_mock_action("Ranking")),
+            "Home": ("home_icon", "Home", lambda: switch_view_callback("home")), 
+            "Novo Post": ("new_post_icon", "Novo Post", lambda: self._show_mock_action("novoprojeto")),
+            "Projetos": ("projects_icon", "Projetos", lambda: self._show_mock_action("projects")),
+            "Ranking": ("ranking_icon", "Ranking", lambda: self._show_mock_action("ranking")),
             "Perfil": ("profile_icon", "Perfil", lambda: self._show_mock_action("Perfil")),
         }
         

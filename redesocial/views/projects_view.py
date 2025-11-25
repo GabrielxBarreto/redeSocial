@@ -84,7 +84,7 @@ class ProjectsView(tk.Frame):
         # --- 1. Botão Voltar (Novo) ---
         def go_back():
             if self.switch_view_callback:
-                self.switch_view_callback("Home") # Volta para a Home ou view anterior
+                self.switch_view_callback("home") # Volta para a Home ou view anterior
         
         back_button = tk.Button(header_frame,
                                 text="< Voltar",

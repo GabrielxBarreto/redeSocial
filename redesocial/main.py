@@ -3,6 +3,10 @@ from .views.welcome_view import WelcomeView
 from .views.signin_view import SigninView
 from .views.signup_view import SignupView
 from .views.home_feed_view import HomeFeedView
+from .views.projects_view import ProjectsView
+from .views.create_new_post_view import NovoPostView
+from .views.ranking_view import RankingView
+
 
 root = tk.Tk()
 root.geometry("400x600")
@@ -29,6 +33,14 @@ def switch_view(name):
     elif name == "home":
         print("entrando na home")
         current_view = HomeFeedView(app_container, switch_view_callback=switch_view)
+    elif name == "projects":
+        print("entrando na projects")
+        current_view = ProjectsView(app_container, switch_view_callback=switch_view)
+    elif name == "novoprojeto":
+        print("entrando na projects")
+        current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None)
+    elif name == "ranking":
+        current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None)
     else:
         current_view = tk.Label(app_container, text="Tela não encontrada.")
 
