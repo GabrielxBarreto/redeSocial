@@ -1,254 +1,362 @@
 import tkinter as tk
-from tkinter import scrolledtext, messagebox
+from tkinter import ttk
+import os
+from PIL import Image, ImageTk, ImageDraw
+import sys
 
-# Importação direta (sem ponto) para funcionar como script autônomo
-from utils_icons import (
-    colors, font_roboto_big, font_inter, font_inter_small, 
-    MOCK_PROFILE_DATA, icones_mock, 
-    load_user_profile_data, update_user_bio, update_user_interests,
-    setup_test_window
-)
+# --- Configurações e Cores ---
+BG_MAIN = "#1A1A1A"
+ACCENT_COLOR = "#6F42C1"
+TEXT_COLOR = "#FFFFFF"
+SUBTEXT_COLOR = "#A0A0A0"
+ENTRY_BG = "#333333" # Cor para os campos de entrada
+SUCCESS_COLOR = "#4CAF50" # Cor para mensagens de sucesso
 
-class UserProfileView:
-    """
-    Representa a tela de perfil do usuário, com dados mockados,
-    bio editável e feed de posts.
-    """
-    def __init__(self, master_frame, icones):
-        self.master_frame = master_frame
-        self.icones = icones
-        self.user_data = load_user_profile_data("current_user")
-        
-        # Frame principal com scroll (simulado)
-        self.main_frame = tk.Frame(master_frame, bg=colors["bg_frame"])
-        self.main_frame.pack(fill="both", expand=True)
+# Largura para simulação mobile
+MOBILE_WIDTH = 400
+# Altura para simulação mobile
+MOBILE_HEIGHT = 700
 
-        # Usamos Canvas e Frame interno para permitir a rolagem
-        self.canvas = tk.Canvas(self.main_frame, bg=colors["bg_frame"], highlightthickness=0)
-        self.canvas.pack(side="left", fill="both", expand=True)
+class UserProfileView(tk.Frame):
+    def __init__(self, master, user_data, navigate_back_callback):
+        super().__init__(master, bg=BG_MAIN)
+        self.master = master
+        # Garantir que tenhamos um username para exibir
+        if 'username' not in user_data:
+             user_data['username'] = 'stefan_h' 
         
-        self.scrollbar = tk.Scrollbar(self.main_frame, orient="vertical", command=self.canvas.yview)
-        self.scrollbar.pack(side="right", fill="y")
+        self.user_data = user_data.copy() 
+        self.navigate_back_callback = navigate_back_callback
 
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.bind('<Configure>', lambda e: self.canvas.configure(scrollregion = self.canvas.bbox("all")))
+        # Variáveis de estado
+        self.is_editing = False
+        self.banner_id = None 
 
-        self.scrollable_frame = tk.Frame(self.canvas, bg=colors["bg_frame"])
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw", width=420)
-        
-        # O frame interno é onde todo o conteúdo do perfil será adicionado
-        self._build_ui()
-        
-        # Permite que o scrollable_frame se ajuste ao redimensionamento do canvas
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        )
-        
-        # Adicionar eventos de rolagem do mouse
-        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        
-        # Armazena referências de imagem para evitar Garbage Collection
-        self.image_refs = [
-            self.icones.get("cover_image"), 
-            self.icones.get("profile_pic"),
-            self.icones.get("location_icon"),
-            self.icones.get("education_icon"),
-            self.icones.get("friends_icon")
-        ]
-        
-    def _on_mousewheel(self, event):
-        """Função para tratar a rolagem do mouse no Canvas."""
-        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        # Variáveis de texto editáveis (Entry/Text)
+        initial_interests = ", ".join(self.user_data.get('interests', ["Design", "Marketing", "Fotografia"]))
+        self.interests_var = tk.StringVar(value=initial_interests)
+        self.description_var = tk.StringVar(value=self.user_data.get('description', 'Arte é minha maior paixão...'))
 
 
-    def _build_ui(self):
-        """Constrói todos os componentes visuais da tela de perfil."""
-        
-        # --- 1. CABEÇALHO (CAPA E FOTO) ---
-        header_frame = tk.Frame(self.scrollable_frame, bg=colors["bg_frame"])
-        header_frame.pack(fill="x")
-        
-        # Imagem de Capa (Placeholder)
-        cover_label = tk.Label(header_frame, image=self.icones.get("cover_image"), bg=colors["bg_frame"])
-        cover_label.pack(fill="x")
+        #  CAMINHO DAS IMAGENS
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.img_dir = os.path.join(script_dir, 'img')
 
-        # Frame da Foto de Perfil e Nome
-        profile_info_frame = tk.Frame(header_frame, bg=colors["bg_frame"])
-        profile_info_frame.pack(fill="x", pady=(0, 10))
-        
-        # Foto de Perfil (Placeholder)
-        profile_pic_label = tk.Label(profile_info_frame, image=self.icones.get("profile_pic"), bg=colors["bg_frame"])
-        # Posiciona a foto sobrepondo a borda inferior da capa
-        profile_pic_label.place(x=20, y=-50) 
-        
-        # Nome do Usuário
-        tk.Label(profile_info_frame, text=self.user_data["username"], 
-                 font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"],
-                 anchor="w").pack(padx=(120, 10), pady=(10, 0), fill="x")
-        
-        # Botão de Amigos (Mock)
-        friends_button = tk.Button(profile_info_frame, text=" 54 Amigos", 
-                                   image=self.icones.get("friends_icon"), compound="left",
-                                   bg=colors["bg_button"], fg=colors["fg_text"], 
-                                   activebackground=colors["active_bg_button"], relief="flat", 
-                                   font=font_inter_small, padx=5, pady=2)
-        friends_button.pack(padx=(120, 10), fill="x")
+        self.images = {}
 
-        # --- 2. BIOGRAFIA E INFORMAÇÕES BÁSICAS ---
-        info_frame = tk.Frame(self.scrollable_frame, bg=colors["bg_frame"])
-        info_frame.pack(fill="x", padx=20, pady=10)
-        
-        # Descrição/Bio (Atualizável)
-        self.bio_label = tk.Label(info_frame, text=self.user_data["bio"], 
-                                  bg=colors["bg_frame"], fg=colors["fg_entry"], 
-                                  font=font_inter, wraplength=380, justify="left", anchor="w")
-        self.bio_label.pack(fill="x", pady=(0, 10))
-        
-        # Botão Editar Bio
-        btn_edit_bio = tk.Button(info_frame, text="Editar Bio", command=self._open_bio_editor,
-                                 bg=colors["purple_button"], fg=colors["fg_text"], 
-                                 activebackground=colors["active_bg_button"], relief="flat", 
-                                 font=font_inter_small)
-        btn_edit_bio.pack(side="right", anchor="e")
+        self._load_images()
+        self._create_widgets()
 
-        # Informações Detalhadas (Localização, Educação)
-        self._create_info_line(info_frame, self.icones.get("location_icon"), self.user_data["location"])
-        self._create_info_line(info_frame, self.icones.get("education_icon"), self.user_data["education"])
-        
-        # --- 3. INTERESSES ---
-        interests_frame = tk.Frame(self.scrollable_frame, bg=colors["bg_frame"])
-        interests_frame.pack(fill="x", padx=20, pady=10)
-        
-        tk.Label(interests_frame, text="Interesses:", font=font_roboto, bg=colors["bg_frame"], fg=colors["fg_text"], anchor="w").pack(fill="x")
-        
-        self.interests_var = tk.StringVar(value=", ".join(self.user_data["interests"]))
-        self.interests_label = tk.Label(interests_frame, textvariable=self.interests_var, 
-                                        bg=colors["bg_frame"], fg=colors["fg_entry"], 
-                                        font=font_inter, wraplength=380, justify="left", anchor="w")
-        self.interests_label.pack(fill="x", pady=(0, 10))
-        
-        btn_edit_interests = tk.Button(interests_frame, text="Editar Interesses", command=self._open_interests_editor,
-                                       bg=colors["bg_button"], fg=colors["fg_text"], 
-                                       activebackground=colors["active_bg_button"], relief="flat", 
-                                       font=font_inter_small)
-        btn_edit_interests.pack(side="right", anchor="e", pady=(0, 5))
+    def _get_image_path(self, filename):
+        """Retorna o caminho absoluto para um arquivo de imagem."""
+        return os.path.join(self.img_dir, filename)
 
+    def _load_images(self):
+        """Carrega e armazena todas as imagens necessárias com tratamento de erro"""
+        image_files = {
+            'cover': 'cover_image.png',
+            'profile': 'profile_pic.png',
+            'follow': 'friend_icon.png',
+            'location': 'location_icon.png',
+            'education': 'education_icon.png',
+            'back': 'back_arrow.png',
+        }
 
-        # --- 4. SEPARADOR E FEED DE POSTS ---
-        tk.Frame(self.scrollable_frame, height=2, bg=colors["bg_button"]).pack(fill="x", padx=20, pady=15)
-        
-        tk.Label(self.scrollable_frame, text="Minhas Publicações", font=font_roboto_big, bg=colors["bg_frame"], fg=colors["fg_text"]).pack(pady=(0, 10))
-        
-        # Feed de Posts do Usuário (Simulado)
-        for post in self.user_data["posts"]:
-            self._create_post_card(self.scrollable_frame, self.user_data["username"], post)
+        for name, filename in image_files.items():
+            path = self._get_image_path(filename)
+            try:
+                pil_img = Image.open(path)
 
-    def _create_info_line(self, parent, icon, text):
-        """Cria uma linha com ícone e texto para informações como localização/educação."""
-        line_frame = tk.Frame(parent, bg=colors["bg_frame"])
-        line_frame.pack(fill="x", pady=2)
-        
-        icon_label = tk.Label(line_frame, image=icon, bg=colors["bg_frame"])
-        icon_label.pack(side="left")
-        
-        tk.Label(line_frame, text=text, bg=colors["bg_frame"], fg=colors["fg_text"], font=font_inter, anchor="w").pack(side="left", padx=5)
+                if name == 'cover':
+                    pil_img = pil_img.resize((MOBILE_WIDTH, 120), Image.Resampling.LANCZOS)
+                elif name == 'profile':
+                    size = 100
+                    pil_img = pil_img.resize((size, size), Image.Resampling.LANCZOS)
+                    mask = Image.new('L', (size, size), 0)
+                    draw = ImageDraw.Draw(mask)
+                    draw.ellipse((0, 0, size, size), fill=255)
+                    pil_img.putalpha(mask)
+                elif name == 'back':
+                    # Aumentando o ícone de voltar para (30x30)
+                    pil_img = pil_img.resize((30, 30), Image.Resampling.LANCZOS)
+                elif name in ['follow', 'location', 'education']:
+                    pil_img = pil_img.resize((22, 22), Image.Resampling.LANCZOS)
 
-    def _create_post_card(self, parent, username, post):
-        """Cria um card visual para um post individual."""
-        card = tk.Frame(parent, bg=colors["bg_entry"], padx=15, pady=10, relief="raised", bd=1)
-        card.pack(fill="x", padx=20, pady=5)
-        
-        # Header do Post
-        header = tk.Frame(card, bg=colors["bg_entry"])
-        header.pack(fill="x", pady=(0, 5))
-        tk.Label(header, text=username, font=font_roboto_big, fg=colors["purple_button"], bg=colors["bg_entry"]).pack(side="left")
-        
-        # Conteúdo do Post
-        tk.Label(card, text=post["text"], font=font_inter, fg=colors["fg_text"], bg=colors["bg_entry"], 
-                 wraplength=350, justify="left").pack(fill="x")
-        
-        # Imagem (se houver)
-        if post["has_image"] and self.icones.get("post_image"):
-            # O post_image é um ícone de mock estático
-            img_label = tk.Label(card, image=self.icones["post_image"], bg=colors["bg_entry"])
-            img_label.pack(pady=10)
-            # Armazena referência da imagem do post
-            card.image_ref = self.icones["post_image"] 
+                self.images[name] = ImageTk.PhotoImage(pil_img)
+            except FileNotFoundError:
+                print(f"ERRO: Arquivo de imagem não encontrado: {filename}. Usando fallback.")
+                self.images[name] = None
+            except Exception as e:
+                print(f"ERRO ao carregar {filename}: {e}")
+                self.images[name] = None
 
-    # --- FUNÇÕES DE EDIÇÃO ---
+    def _create_widgets(self):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(3, weight=1)
+        
+        # --- Frame para o Banner de Notificação (posicionado no topo) ---
+        self.banner_frame = tk.Frame(self, bg=SUCCESS_COLOR, height=30)
+        self.banner_label = tk.Label(self.banner_frame, text="", bg=SUCCESS_COLOR, fg=TEXT_COLOR, font=("Arial", 10))
+        self.banner_label.pack(expand=True, fill="both")
+        # Inicialmente não gridado
 
-    def _open_bio_editor(self):
-        """Abre uma nova janela (Toplevel) para editar a Bio."""
-        editor = tk.Toplevel(self.master_frame)
-        editor.title("Editar Biografia")
-        editor.geometry("350x250")
-        editor.config(bg=colors["bg_main"])
-        
-        tk.Label(editor, text="Nova Biografia:", bg=colors["bg_main"], fg=colors["fg_text"], font=font_inter).pack(pady=10)
-        
-        bio_text = scrolledtext.ScrolledText(editor, height=5, width=40, font=font_inter,
-                                             bg=colors["bg_entry"], fg=colors["fg_entry"], 
-                                             insertbackground=colors["fg_entry"], wrap="word")
-        bio_text.insert("1.0", self.user_data["bio"])
-        bio_text.pack(padx=10, pady=5)
-        
-        def save():
-            nova_bio = bio_text.get("1.0", tk.END).strip()
-            update_user_bio(self.user_data["username"], nova_bio)
-            self.user_data["bio"] = nova_bio # Atualiza o dado localmente
-            self.bio_label.config(text=nova_bio) # Atualiza a label na tela principal
-            editor.destroy()
+        # --- Imagem de Capa e Botão Voltar ---
+        cover_frame = tk.Frame(self, bg=BG_MAIN)
+        cover_frame.grid(row=0, column=0, sticky="ew")
 
-        tk.Button(editor, text="Salvar Bio", command=save,
-                  bg=colors["purple_button"], fg=colors["fg_text"], 
-                  activebackground=colors["active_bg_button"], relief="flat", 
-                  font=font_inter).pack(pady=10)
-                  
-    def _open_interests_editor(self):
-        """Abre uma nova janela (Toplevel) para editar Interesses."""
-        editor = tk.Toplevel(self.master_frame)
-        editor.title("Editar Interesses")
-        editor.geometry("350x200")
-        editor.config(bg=colors["bg_main"])
+        cover_label = tk.Label(cover_frame, image=self.images.get('cover'), width=MOBILE_WIDTH)
+        if self.images.get('cover'):
+            cover_label.image = self.images.get('cover')
+        else:
+            cover_label.config(text="Capa", bg="#333333", fg=SUBTEXT_COLOR, height=8)
+        cover_label.pack(fill="x", anchor="n")
+
+        # Botão Voltar
+        back_button = tk.Button(cover_frame, image=self.images.get('back'), command=self._on_back_click,
+                                bg=BG_MAIN, activebackground=BG_MAIN, relief="flat", bd=0, padx=10, pady=10)
+        if self.images.get('back'):
+            back_button.image = self.images.get('back')
+        else:
+            back_button.config(text="<")
+        back_button.place(x=0, y=0) 
+
+        # --- Informações e Ações ---
+        self.info_frame = tk.Frame(self, bg=BG_MAIN, padx=15, pady=5)
+        self.info_frame.grid(row=1, column=0, sticky="ew")
+        self.info_frame.grid_columnconfigure(0, weight=1)
+
+        header_row = tk.Frame(self.info_frame, bg=BG_MAIN)
+        header_row.pack(fill="x", pady=(0, 10))
+
+        # Foto de Perfil
+        profile_label = tk.Label(self.info_frame, image=self.images.get('profile'), bg=BG_MAIN)
+        if self.images.get('profile'):
+            profile_label.image = self.images.get('profile')
+        else:
+            profile_label.config(text="Foto", bg="#555555", width=10, height=5)
+
+        profile_label.pack(side="top", anchor="w", pady=(0, 5))
+
+        # Nome Completo
+        name_label = tk.Label(self.info_frame, text=self.user_data.get('name', 'Nome do Usuário'),
+                              fg=TEXT_COLOR, bg=BG_MAIN, font=("Arial", 16, "bold"), anchor="w")
+        name_label.pack(fill="x", pady=(5, 0))
         
-        tk.Label(editor, text="Interesses (separados por vírgula):", bg=colors["bg_main"], fg=colors["fg_text"], font=font_inter).pack(pady=10)
+        # Username (@)
+        username_label = tk.Label(self.info_frame, text=f"@{self.user_data.get('username', 'usuario_mock')}",
+                                  fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 11), anchor="w")
+        username_label.pack(fill="x", pady=(0, 5))
+
+        # --- Botões de Ação Dinâmicos Seguir e Editar ---
+        self.action_frame = tk.Frame(header_row, bg=BG_MAIN)
+        self.action_frame.pack(side="right", anchor="center", pady=(10, 0))
+
+        self.follow_button = tk.Button(self.action_frame, text="Seguir", image=self.images.get('follow'), compound="left",
+                                   command=self._on_follow_click,
+                                   bg=ACCENT_COLOR, fg=TEXT_COLOR, activebackground=ACCENT_COLOR,
+                                   activeforeground=TEXT_COLOR, relief="flat", font=("Arial", 9, "bold"),
+                                   padx=10, pady=4)
+        if self.images.get('follow'):
+            self.follow_button.image = self.images.get('follow')
+        self.follow_button.pack(side="left")
+
+        # Botão Editar
+        self.edit_button = tk.Button(self.action_frame, text="Editar", command=self._toggle_edit_mode,
+                                     bg="#555555", fg=TEXT_COLOR, activebackground="#777777",
+                                     relief="flat", font=("Arial", 9, "bold"), padx=10, pady=4)
+        self.edit_button.pack(side="left", padx=(10, 0))
+        # Fim dos Botões de Ação Dinâmicos
+
+        # --- 3. Detalhes  ---
+        details_frame = tk.Frame(self.info_frame, bg=BG_MAIN)
+        details_frame.pack(fill="x", pady=5)
+
+        location_label = tk.Label(details_frame, image=self.images.get('location'), compound="left",
+                                   text=self.user_data.get('location', 'Osasco - SP'),
+                                   fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 9))
+        if self.images.get('location'):
+            location_label.image = self.images.get('location')
+        location_label.pack(side="left", padx=(0, 10))
+
+        education_label = tk.Label(details_frame, image=self.images.get('education'), compound="left",
+                                    text=self.user_data.get('education', 'Fatec Carapicuiba'),
+                                    fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 9))
+        if self.images.get('education'):
+            education_label.image = self.images.get('education')
+        education_label.pack(side="left")
+
+        # ---  Abas de Conteúdo  ---
+        style = ttk.Style()
+        style.theme_create("CustomStyle", parent="alt", settings={
+            "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0], "background": BG_MAIN}},
+            "TNotebook.Tab": {
+                "configure": {"padding": [10, 4], "background": BG_MAIN, "foreground": SUBTEXT_COLOR, "font": ('Arial', 9, 'bold')},
+                "map": {"background": [("selected", BG_MAIN)], "foreground": [("selected", ACCENT_COLOR)]}
+            }
+        })
+        style.theme_use("CustomStyle")
+
+        self.notebook = ttk.Notebook(self)
+        self.notebook.grid(row=2, column=0, sticky="nsew", padx=15, pady=(5, 0))
+
+        self.about_frame = tk.Frame(self.notebook, bg=BG_MAIN, padx=10, pady=10)
+        self.notebook.add(self.about_frame, text="Sobre")
+        self._create_about_tab(self.about_frame)
+
+        activity_frame = tk.Frame(self.notebook, bg=BG_MAIN, padx=10, pady=10)
+        self.notebook.add(activity_frame, text="Atividade")
+        self._create_activity_tab(activity_frame)
+
+    def _show_temp_banner(self, message, color):
+        """Exibe um banner temporário com uma mensagem no topo da tela."""
+        if self.banner_id:
+            self.after_cancel(self.banner_id)
         
-        # Converte a lista de interesses em uma string separada por vírgulas para edição
-        initial_text = ", ".join(self.user_data["interests"])
-        interests_entry = tk.Entry(editor, width=40, font=font_inter,
-                                   bg=colors["bg_entry"], fg=colors["fg_entry"], 
-                                   insertbackground=colors["fg_entry"])
-        interests_entry.insert(0, initial_text)
-        interests_entry.pack(padx=10, pady=5)
+        self.banner_frame.config(bg=color)
+        self.banner_label.config(text=message, bg=color)
         
-        def save():
-            interesses_string = interests_entry.get().strip()
-            # Converte a string de volta para lista
-            novos_interesses = [i.strip() for i in interesses_string.split(',') if i.strip()]
+        # Coloca o banner acima de todo o conteúdo da tela
+        self.banner_frame.lift()
+        self.banner_frame.grid(row=0, column=0, columnspan=1, sticky="ew", pady=0)
+        self.banner_frame.grid_configure(row=0, columnspan=1, sticky="ew")
+
+        # Oculta o banner após 2.5 segundos
+        self.banner_id = self.after(2500, self._hide_banner)
+
+    def _hide_banner(self):
+        """Oculta o banner de notificação."""
+        if self.banner_frame.winfo_ismapped():
+            self.banner_frame.grid_forget()
+
+    def _create_about_tab(self, parent_frame):
+        # Limpa o frame para reconstrução no modo de edição
+        for widget in parent_frame.winfo_children():
+            widget.destroy()
+
+        # --- Interesses ---
+        interests_title = tk.Label(parent_frame, text="Interesses", fg=TEXT_COLOR, bg=BG_MAIN, font=("Arial", 11, "bold"), anchor="w")
+        interests_title.pack(fill="x", pady=(0, 5))
+
+        if self.is_editing:
+            # Modo de Edição
+            self.interests_entry = tk.Entry(parent_frame, textvariable=self.interests_var,
+                                            bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR,
+                                            relief="flat", bd=0, font=("Arial", 10), justify='left')
+            self.interests_entry.pack(fill="x", pady=(0, 10))
+        else:
+            # Modo de Visualização
+            tags_frame = tk.Frame(parent_frame, bg=BG_MAIN)
+            tags_frame.pack(fill="x", pady=(0, 10))
+
+            # Converte a string de interesses (separada por vírgula) em tags
+            interests_list = [tag.strip() for tag in self.interests_var.get().split(',') if tag.strip()]
             
-            update_user_interests(self.user_data["username"], novos_interesses)
-            self.user_data["interests"] = novos_interesses # Atualiza o dado localmente
-            self.interests_var.set(", ".join(novos_interesses)) # Atualiza a label
-            editor.destroy()
+            for text in interests_list:
+                tag_label = tk.Label(tags_frame, text=text, bg=ACCENT_COLOR, fg=TEXT_COLOR, padx=6, pady=2, relief="flat", font=("Arial", 9))
+                tag_label.pack(side="left", padx=(0, 6))
 
-        tk.Button(editor, text="Salvar Interesses", command=save,
-                  bg=colors["purple_button"], fg=colors["fg_text"], 
-                  activebackground=colors["active_bg_button"], relief="flat", 
-                  font=font_inter).pack(pady=10)
+        # --- Descrição ---
+        desc_title = tk.Label(parent_frame, text="Descrição", fg=TEXT_COLOR, bg=BG_MAIN, font=("Arial", 11, "bold"), anchor="w")
+        desc_title.pack(fill="x", pady=(0, 5))
+
+        if self.is_editing:
+            # Modo de Edição
+            self.description_text_widget = tk.Text(parent_frame, height=5,
+                                                   bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR,
+                                                   relief="flat", bd=0, font=("Arial", 10), wrap="word")
+            self.description_text_widget.insert("1.0", self.description_var.get())
+            self.description_text_widget.pack(fill="x", expand=False)
+        else:
+            # Modo de Visualização
+            desc_label = tk.Label(parent_frame, text=self.description_var.get(), fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 9), justify="left", wraplength=350, anchor="nw")
+            desc_label.pack(fill="both", expand=True)
+
+        # Botão Salvar
+        if self.is_editing:
+            save_button = tk.Button(parent_frame, text="Salvar Alterações", command=self._on_save_click,
+                                    bg=ACCENT_COLOR, fg=TEXT_COLOR, activebackground=ACCENT_COLOR,
+                                    relief="flat", font=("Arial", 10, "bold"), padx=10, pady=5)
+            save_button.pack(fill="x", pady=(15, 0))
 
 
-def criar_aba_perfil(container_frame, icones):
-    """Função wrapper para criar a tela de perfil."""
-    # Instancia a classe UserProfileView, que gerencia seu próprio layout e scroll.
-    profile_view = UserProfileView(container_frame, icones)
-    return profile_view.main_frame
+    def _create_activity_tab(self, parent_frame):
+        post_label = tk.Label(parent_frame, text="Feed de Posts e Projetos aqui...", fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 9))
+        post_label.pack(fill="both", expand=True)
 
-# --- BLOCO DE TESTE INDIVIDUAL ---
+    def _toggle_edit_mode(self):
+        """Alterna entre os modos de visualização e edição"""
+        self.is_editing = not self.is_editing
+        
+        if self.is_editing:
+            self.edit_button.config(text="Cancelar Edição", bg="#F44336")
+            self.follow_button.pack_forget()
+            print("DEBUG: Entrou no Modo de Edição.")
+        else:
+            self.edit_button.config(text="Editar", bg="#555555")
+            self.follow_button.pack(side="left")
+            print("DEBUG: Saiu do Modo de Edição (Sem Salvar).")
+
+        # Recria a aba "Sobre" para exibir os novos widgets
+        self._create_about_tab(self.about_frame)
+        self.notebook.select(self.about_frame)
+
+    def _on_save_click(self):
+        """Salva as alterações e sai do modo de edição."""
+        #  Captura os novos valores
+        new_description = self.description_text_widget.get("1.0", "end-1c").strip()
+        self.description_var.set(new_description)
+
+        new_interests_string = self.interests_var.get().strip()
+
+        # Atualiza os dados (Simulação de salvamento)
+        self.user_data['description'] = new_description
+        self.user_data['interests'] = new_interests_string
+
+        print(f"DEBUG: Dados Salvos! Descrição: '{new_description}' | Interesses (raw): '{new_interests_string}'")
+        self._show_temp_banner("Perfil salvo com sucesso!", SUCCESS_COLOR)
+
+        # Sai do modo de edição
+        self._toggle_edit_mode()
+
+    def _on_follow_click(self):
+        """Função chamada ao clicar no botão Seguir."""
+        user_to_follow = self.user_data.get('name', 'o usuário')
+        self._show_temp_banner(f"Você seguiu {user_to_follow}!", SUCCESS_COLOR)
+        # Aqui você implementaria a lógica real de seguir/deixar de seguir
+        print("DEBUG: Clicou em Seguir")
+
+    def _on_back_click(self):
+        
+        # Exibe a mensagem de função de navegação antes de chamar o callback
+        self._show_temp_banner("Função para ir para a Home/Feed", "#3498DB") #
+
+        # Em uma aplicação real, você chamaria o callback após um pequeno atraso
+       
+        self.after(500, self.navigate_back_callback)
+
+
 if __name__ == "__main__":
-    test_window, root = setup_test_window("Teste Individual: Perfil do Usuário")
-    
-    frame = criar_aba_perfil(test_window, icones_mock)
-    frame.pack(fill="both", expand=True)
-    
+    # Dados de exemplo 
+    mock_user_data = {
+        'name': 'Alan Oliveira',
+        'username': 'alandev', # Adicionado
+        'location': 'Concordia - SC',
+        'education': 'IFC - Concordia',
+        'interests': ["Design", "Marketing", "Fotografia"], 
+        'description': 'Arte é minha maior paixão, eu sou gamada em Fotografia e Design...Marketing também haha me adiciona aí para conversarmos! :)'
+    }
+
+    def go_back():
+        print("DEBUG: Navegar de volta (saindo da tela de perfil)")
+        # root.quit() # Comentado para permitir que o banner temporário seja visto
+
+    root = tk.Tk()
+    root.title("Perfil do Usuário (Mobile)")
+    root.geometry(f"{MOBILE_WIDTH}x{MOBILE_HEIGHT}")
+    root.resizable(False, False)
+    root.config(bg=BG_MAIN)
+
+    app = UserProfileView(root, mock_user_data, go_back)
+    app.pack(fill="both", expand=True)
+
     root.mainloop()
