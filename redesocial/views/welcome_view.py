@@ -177,12 +177,13 @@ if __name__ == "__main__":
     test_frame = tk.Frame(root)
     test_frame.pack(fill="both", expand=True)
     
-    def switch_view_mock(view_name):
-        messagebox.showinfo("Navegação", f"Navegar para a View: {view_name}")
+    def switch_view(view_name):
+        test_frame.place_forget()
+        
     
     welcome_app = WelcomeView(
         test_frame,
-        switch_view_mock
+        switch_view
     )
     welcome_app.pack(fill="both", expand=True)
     
