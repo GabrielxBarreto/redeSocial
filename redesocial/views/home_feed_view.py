@@ -4,15 +4,15 @@ import tkinter.messagebox as messagebox
 import sys
 import os
 from PIL import Image, ImageTk
-import pandas as pd # Assumindo que pandas está instalado, pois o DataFrame é usado
+import pandas as pd 
 
 # --- Importações de Dados e Utils ---
-# Assumindo que a estrutura do pacote e os dataframes são válidos
+
 try:
     from redesocial.data.userData import user_df
     from redesocial.data.publicationData import publication_df
     from redesocial.data.midiaData import midia_df
-    # Importação de cores e dimensões (mantida do seu código original)
+    # Importação de cores e dimensões 
     from redesocial.views.utils_icons import (
         colors, # Embora você use o DARK_THEME, mantive a importação
         font_roboto_big,
@@ -22,7 +22,7 @@ try:
         FRAME_HEIGHT
     )
 except ImportError as e:
-    # Este bloco é crucial para evitar quebras se o script for executado fora do pacote
+    
     print(f"Erro ao importar dados/utils: {e}. Usando Mocks de Fallback.")
     
     # Mocks simplificados para o contexto da HomeFeedView
@@ -93,11 +93,11 @@ def load_navbar_icons(root_window, size=(28, 28)):
             img = Image.open(full_path)
             
             # Redimensionamento
-            # Usando Image.Resampling.LANCZOS, que é a forma correta com PIL 9+
+         
             img = img.resize(size, Image.Resampling.LANCZOS)
             
             # Converte para PhotoImage, vinculando ao widget mestre
-            # É crucial que o PhotoImage seja vinculado a um widget persistente (como root_window ou self.master)
+            
             photo = ImageTk.PhotoImage(img, master=root_window) 
             carregados[icon_tag] = photo
             
