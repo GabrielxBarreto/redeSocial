@@ -27,7 +27,6 @@ class UserProfileView(tk.Frame):
              user_data['username'] = 'stefan_h' 
         
         # Variável importante: True se o usuário logado estiver vendo o próprio perfil.
-        # Isso determina se mostra Editar/Logout ou Seguir.
         self.is_own_profile = user_data.get('is_current_user', True) 
         
         self.user_data = user_data.copy() 
@@ -39,6 +38,10 @@ class UserProfileView(tk.Frame):
 
         # Variáveis de texto editáveis (Entry/Text)
         initial_interests = ", ".join(self.user_data.get('interests', ["Design", "Marketing", "Fotografia"]))
+        
+        # NOVO: Variável para o nome completo
+        self.name_var = tk.StringVar(value=self.user_data.get('name', 'Nome do Usuário'))
+        
         self.interests_var = tk.StringVar(value=initial_interests)
         self.description_var = tk.StringVar(value=self.user_data.get('description', 'Arte é minha maior paixão...'))
 
@@ -96,14 +99,8 @@ class UserProfileView(tk.Frame):
                 self.images[name] = None
 
     def _create_widgets(self):
-        # O frame principal é gridado: 
-        # 0: Banner (opcional)
-        # 1: Cover / Header / Info Frame
-        # 2: Notebook (Abas)
-        # 3: Logout Button (NOVO)
-
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(2, weight=1) # Apenas o Notebook deve expandir verticalmente
+        self.rowconfigure(2, weight=1) 
         
         # --- Frame para o Banner de Notificação ---
         self.banner_frame = tk.Frame(self, bg=SUCCESS_COLOR, height=30)
@@ -147,12 +144,11 @@ class UserProfileView(tk.Frame):
 
         profile_label.pack(side="top", anchor="w", pady=(0, 5))
 
-        # Nome Completo e Username... (Outras Labels)
-        # ... (Mantido o código anterior para Nome, Username e Detalhes) ...
-        name_label = tk.Label(self.info_frame, text=self.user_data.get('name', 'Nome do Usuário'),
-                              fg=TEXT_COLOR, bg=BG_MAIN, font=("Arial", 16, "bold"), anchor="w")
-        name_label.pack(fill="x", pady=(5, 0))
+        # Nome Completo (DINÂMICO)
+        self.name_widget = self._create_name_widget(self.info_frame)
+        self.name_widget.pack(fill="x", pady=(5, 0))
         
+        # Username (@)
         username_label = tk.Label(self.info_frame, text=f"@{self.user_data.get('username', 'usuario_mock')}",
                                      fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 11), anchor="w")
         username_label.pack(fill="x", pady=(0, 5))
@@ -211,15 +207,29 @@ class UserProfileView(tk.Frame):
                                             command=self._on_logout_click,
                                             bg=LOGOUT_COLOR, fg=TEXT_COLOR, activebackground=LOGOUT_COLOR,
                                             activeforeground=TEXT_COLOR, relief="flat", font=("Arial", 10, "bold"),
-                                            padx=20, pady=10, width=MOBILE_WIDTH - 60) # Centraliza o botão
+                                            padx=20, pady=10, width=MOBILE_WIDTH - 60) 
             if self.images.get('logout'):
                  self.logout_button.image = self.images.get('logout')
-            self.logout_button.pack(padx=15) # O pack centraliza automaticamente no frame
-        
+            self.logout_button.pack(padx=15) 
+            
+    def _create_name_widget(self, parent):
+        """Cria o widget de Nome (Label ou Entry) dependendo do modo de edição."""
+        if self.is_editing and self.is_own_profile:
+            # Modo de Edição: Entry (Input)
+            widget = tk.Entry(parent, 
+                              textvariable=self.name_var,
+                              bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR,
+                              relief="flat", bd=1, font=("Arial", 16, "bold"), justify='left')
+        else:
+            # Modo de Visualização: Label (Texto Estático)
+            widget = tk.Label(parent, 
+                              textvariable=self.name_var,
+                              fg=TEXT_COLOR, bg=BG_MAIN, font=("Arial", 16, "bold"), anchor="w")
+        return widget
+
     def _setup_action_buttons(self):
         """Configura os botões de ação (Seguir ou Editar) baseados no contexto."""
         
-        # Limpa o frame de botões
         for widget in self.action_frame.winfo_children():
             widget.destroy()
 
@@ -243,7 +253,6 @@ class UserProfileView(tk.Frame):
 
 
     def _show_temp_banner(self, message, color):
-        # ... (Função show_temp_banner mantida) ...
         """Exibe um banner temporário com uma mensagem no topo da tela."""
         if self.banner_id:
             self.after_cancel(self.banner_id)
@@ -251,22 +260,18 @@ class UserProfileView(tk.Frame):
         self.banner_frame.config(bg=color)
         self.banner_label.config(text=message, bg=color)
         
-        # Coloca o banner acima de todo o conteúdo da tela
         self.banner_frame.lift()
         self.banner_frame.grid(row=0, column=0, columnspan=1, sticky="ew", pady=0)
         self.banner_frame.grid_configure(row=0, columnspan=1, sticky="ew")
 
-        # Oculta o banner após 2.5 segundos
         self.banner_id = self.after(2500, self._hide_banner)
 
     def _hide_banner(self):
-        # ... (Função _hide_banner mantida) ...
         """Oculta o banner de notificação."""
         if self.banner_frame.winfo_ismapped():
             self.banner_frame.grid_forget()
 
     def _create_about_tab(self, parent_frame):
-        # ... (Função _create_about_tab mantida, remove a lógica do botão Logout) ...
         # Limpa o frame para reconstrução no modo de edição
         for widget in parent_frame.winfo_children():
             widget.destroy()
@@ -286,7 +291,6 @@ class UserProfileView(tk.Frame):
             tags_frame = tk.Frame(parent_frame, bg=BG_MAIN)
             tags_frame.pack(fill="x", pady=(0, 10))
 
-            # Converte a string de interesses (separada por vírgula) em tags
             interests_list = [tag.strip() for tag in self.interests_var.get().split(',') if tag.strip()]
             
             for text in interests_list:
@@ -317,7 +321,6 @@ class UserProfileView(tk.Frame):
             save_button.pack(fill="x", pady=(15, 0))
 
     def _create_activity_tab(self, parent_frame):
-        # ... (Função _create_activity_tab mantida) ...
         post_label = tk.Label(parent_frame, text="Feed de Posts e Projetos aqui...", fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 9))
         post_label.pack(fill="both", expand=True)
 
@@ -325,36 +328,52 @@ class UserProfileView(tk.Frame):
         """Alterna entre os modos de visualização e edição"""
         self.is_editing = not self.is_editing
         
-        # Oculta/Exibe o botão de Logout abaixo do Notebook durante a edição
+        # 1. Atualiza o Nome (Label -> Entry ou Entry -> Label)
+        if self.name_widget:
+            self.name_widget.pack_forget()
+        self.name_widget = self._create_name_widget(self.info_frame)
+        self.name_widget.pack(fill="x", pady=(5, 0))
+        self.name_widget.lift() # Garante que o Entry/Label esteja no topo
+
+        # 2. Ajusta o botão Editar/Cancelar e o Logout
         if self.is_own_profile:
             if self.is_editing:
-                self.edit_button.config(text="Cancelar Edição", bg=LOGOUT_COLOR) # Cor Cancelar
+                self.edit_button.config(text="Cancelar Edição", bg=LOGOUT_COLOR) 
                 self.logout_frame.grid_remove() 
             else:
-                self.edit_button.config(text="Editar Perfil", bg="#555555") # Cor Editar
+                self.edit_button.config(text="Editar Perfil", bg="#555555") 
                 self.logout_frame.grid() 
 
-        # Recria a aba "Sobre" para exibir os novos widgets (Entry/Text)
+        # 3. Recria a aba "Sobre"
         self._create_about_tab(self.about_frame)
         self.notebook.select(self.about_frame)
 
     def _on_save_click(self):
-        # ... (Função _on_save_click mantida) ...
         """Salva as alterações e sai do modo de edição."""
+        # Captura o novo nome
+        new_name = self.name_var.get().strip()
+        
+        # Captura os novos valores de descrição e interesses
         new_description = self.description_text_widget.get("1.0", "end-1c").strip()
-        self.description_var.set(new_description)
-
         new_interests_string = self.interests_var.get().strip()
+        
+        # Validação simples
+        if not new_name:
+            self._show_temp_banner("Erro: O nome não pode estar vazio.", LOGOUT_COLOR)
+            return
+
+        # Atualiza os dados (Simulação de salvamento)
+        self.user_data['name'] = new_name
         self.user_data['description'] = new_description
         self.user_data['interests'] = new_interests_string
 
-        print(f"DEBUG: Dados Salvos! Descrição: '{new_description}' | Interesses (raw): '{new_interests_string}'")
+        print(f"DEBUG: Dados Salvos! Nome: '{new_name}' | Descrição: '{new_description}'")
         self._show_temp_banner("Perfil salvo com sucesso!", SUCCESS_COLOR)
 
+        # Sai do modo de edição
         self._toggle_edit_mode()
 
     def _on_follow_click(self):
-        # ... (Função _on_follow_click mantida) ...
         """Função chamada ao clicar no botão Seguir."""
         user_to_follow = self.user_data.get('name', 'o usuário')
         self._show_temp_banner(f"Você seguiu {user_to_follow}!", SUCCESS_COLOR)
@@ -364,11 +383,9 @@ class UserProfileView(tk.Frame):
         """Função chamada ao clicar no botão Logout."""
         print("DEBUG: Clicou em Logout")
         self._show_temp_banner("Desconectando... (Simulação de Logout)", LOGOUT_COLOR)
-        
         self.after(1500, self.master.destroy) 
         
     def _on_back_click(self):
-        # ... (Função _on_back_click mantida) ...
         """Função chamada ao clicar no botão Voltar."""
         self._show_temp_banner("Função para ir para a Home/Feed", "#3498DB") 
         self.after(500, self.navigate_back_callback)
@@ -377,7 +394,7 @@ class UserProfileView(tk.Frame):
 if __name__ == "__main__":
     # Dados de exemplo para o próprio perfil
     mock_user_data_own = {
-        'name': 'Alan Oliveira',
+        'name': 'miau_user',
         'username': 'alandev', 
         'location': 'Concordia - SC',
         'education': 'IFC - Concordia',
@@ -385,22 +402,9 @@ if __name__ == "__main__":
         'description': 'Arte é minha maior paixão, eu sou gamada em Fotografia e Design...'
     }
 
-    # Dados de exemplo para OUTRO perfil
-    mock_user_data_other = {
-        'name': 'Bob Smith',
-        'username': 'bob_smith', 
-        'location': 'São Paulo - SP',
-        'education': 'USP',
-        'interests': ["IA", "Machine Learning"],
-        'description': 'Estudante de IA com foco em redes neurais.',
-        'is_current_user': False # ESSA CHAVE INDICA QUE NÃO É O PRÓPRIO PERFIL
-    }
+    # Dados de exemplo para OUTRO perfil (Para testar o botão Seguir)
+   
     
-    # ----------------------------------------------------------------------
-    # Para testar o Logout: Use mock_user_data_own (padrão)
-    # Para testar o Seguir: Use mock_user_data_other
-    # ----------------------------------------------------------------------
-
     def go_back():
         print("DEBUG: Navegar de volta (saindo da tela de perfil)")
 
