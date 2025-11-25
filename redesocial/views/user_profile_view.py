@@ -19,7 +19,7 @@ MOBILE_WIDTH = 400
 MOBILE_HEIGHT = 700
 
 class UserProfileView(tk.Frame):
-    def __init__(self, master, user_data, navigate_back_callback):
+    def __init__(self, master, user_data, navigate_back_callback=None):
         super().__init__(master, bg=BG_MAIN)
         self.master = master
         
@@ -384,6 +384,7 @@ class UserProfileView(tk.Frame):
         print("DEBUG: Clicou em Logout")
         self._show_temp_banner("Desconectando... (Simulação de Logout)", LOGOUT_COLOR)
         self.after(1500, self.master.destroy) 
+        self.navigate_back_callback("signin")
         
     def _on_back_click(self):
         """Função chamada ao clicar no botão Voltar."""

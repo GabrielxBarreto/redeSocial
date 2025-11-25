@@ -135,7 +135,7 @@ class BottomBar(tk.Frame):
             "Novo Post": ("new_post_icon", "Novo Post", lambda: self._show_mock_action("novoprojeto")),
             "Projetos": ("projects_icon", "Projetos", lambda: self._show_mock_action("projects")),
             "Ranking": ("ranking_icon", "Ranking", lambda: self._show_mock_action("ranking")),
-            "Perfil": ("profile_icon", "Perfil", lambda: self._show_mock_action("Perfil")),
+            "Perfil": ("profile_icon", "Perfil", lambda: self._show_mock_action("profile")),
         }
         
         col = 0

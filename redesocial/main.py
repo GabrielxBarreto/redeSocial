@@ -6,6 +6,7 @@ from .views.home_feed_view import HomeFeedView
 from .views.projects_view import ProjectsView
 from .views.create_new_post_view import NovoPostView
 from .views.ranking_view import RankingView
+from .views.user_profile_view import UserProfileView
 
 
 root = tk.Tk()
@@ -41,6 +42,21 @@ def switch_view(name):
         current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None)
     elif name == "ranking":
         current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None)
+    elif name == "profile":
+        mock_user_data = {
+        'name': 'Gabriel',
+        'username': 'gab_dev',
+        'location': 'Chapecó - SC',
+        'education': 'UFFS',
+        'interests': ['Design', 'Programação', 'Fotografia'],
+        'description': 'Apaixonado por tecnologia e design.'
+        }
+        
+        current_view = UserProfileView(
+        app_container, 
+        user_data=mock_user_data, 
+        navigate_back_callback=switch_view  # <-- aqui
+)
     else:
         current_view = tk.Label(app_container, text="Tela não encontrada.")
 
