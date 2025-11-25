@@ -45,13 +45,13 @@ def signupController(root, entry_name, entry_email, entry_password, entry_day, e
     try:
         # Chama o método signup do service (ele faz a validação e salva)
         user_obj = USER_AUTH_SERVICE.signup(
-            entry_name.get().strip(),
-            entry_email.get().strip(),
-            entry_password.get().strip(),
-            entry_day.get().strip(),
-            entry_month.get().strip(),
-            entry_year.get().strip(),
-            entry_gender.get().strip()
+            entry_name,
+            entry_email,
+            entry_password,
+            entry_day,
+            entry_month,
+            entry_year,
+            entry_gender
         )
         
         if user_obj:

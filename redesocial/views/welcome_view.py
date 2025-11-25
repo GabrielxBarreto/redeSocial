@@ -64,8 +64,8 @@ class WelcomeView(tk.Frame):
     
     logo_image_tk = None
     
-    def __init__(self, master, switch_view_callback=None, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
+    def __init__(self, master, switch_view_callback=None):
+        super().__init__(master)
         self.switch_view_callback = switch_view_callback
         
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
@@ -146,7 +146,7 @@ class WelcomeView(tk.Frame):
         # 4. Botão Começar
         start_button = tk.Button(content_frame,
                                  text="Começar",
-                                 command=lambda: self._go_to_view("Signin"),
+                                 command=lambda: self._go_to_view("signin"),
                                  bg=colors["accent_color"],
                                  fg=colors["fg_text"],
                                  font=font_roboto_big,

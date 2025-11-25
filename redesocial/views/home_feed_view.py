@@ -1,318 +1,174 @@
 import tkinter as tk
 from tkinter import ttk
-if __package__:
-    from redesocial.data.userData import user_df
-    from redesocial.data.publicationData import publication_df
-    from redesocial.data.midiaData import midia_df
+from PIL import Image, ImageTk
 
+from redesocial.data.userData import user_df
+from redesocial.data.publicationData import publication_df
+from redesocial.data.midiaData import midia_df
 
-else:
-    
-    from redesocial.data.publicationData import publication_df
-    from redesocial.data.userData import user_df
-    from redesocial.data.midiaData import midia_df
+from redesocial.views.utils_icons import (
+    colors,
+    font_roboto_big,
+    font_roboto,
+    font_inter,
+    FRAME_WIDTH,
+    FRAME_HEIGHT
+)
 
-import sys
-import os
+DARK_THEME_COLORS = {
+    "bg_main": "#1e1e1e",
+    "bg_frame": "#252526",
+    "bg_entry": "#333333",
+    "fg_text": "#ffffff",
+    "fg_entry": "#d4d4d4",
+    "bg_button": "#555555",
+    "active_bg_button": "#666666",
+    "purple_button": "#5653fe", 
+    "bottom_bar_bg": "#1e1e1e", # Cor específica para a barra de navegação
+    "icon_active_fg": "#5653fe",
+    "icon_inactive_fg": "#999999",
+}
 
-# Importa as utilidades do arquivo pai (utils_icons.py)
-# NOTA: Assumimos que utils_icons.py está no mesmo diretório ou em um caminho de módulo acessível
-try:
-    from redesocial.views.utils_icons import (
-        colors, 
-        font_roboto_big, 
-        font_roboto, 
-        font_inter, 
-        FRAME_WIDTH, 
-        FRAME_HEIGHT, 
-        MOCK_FEED_POSTS, 
-        carregar_icones_mock, 
-        setup_test_window
-    )
-except ImportError:
-    # Fallback para execução local ou ambiente de teste
-    print("Erro ao importar utilidades. Verifique se 'utils_icons.py' está no caminho correto.")
-    
-    # Mocks MÍNIMOS para evitar quebras no teste unitário
-    class MockColors:
-        bg_main = "#1e1e1e"
-        bg_frame = "#252526"
-        bg_entry = "#333333"
-        fg_text = "#ffffff"
-        purple_button = "#5653fe"
-        icon_active_fg = "#5653fe"
-        icon_inactive_fg = "#999999" # Adicionado para completar o mock
-    colors = MockColors()
-    font_roboto_big = ("Roboto", 16, "bold")
-    font_roboto = ("Roboto", 12)
-    font_inter = ("Inter", 10)
-    FRAME_WIDTH = 420
-    FRAME_HEIGHT = 720
-    MOCK_FEED_POSTS = [
-        {"user": "MockUser1", "text": "Post de teste 1.", "has_image": False},
-        {"user": "MockUser2", "text": "Post de teste 2 com imagem.", "has_image": True},
-    ]
-    def setup_test_window(*args): 
-        root = tk.Tk()
-        root.withdraw()
-        window = tk.Toplevel(root)
-        window.geometry(f"{FRAME_WIDTH}x{FRAME_HEIGHT}")
-        return window, root, {}
-    def carregar_icones_mock(): return {}
+class HomeFeedView(tk.Frame):
+    """Tela principal de Feed organizada no mesmo padrão das views Signin/Signup/Welcome"""
 
-
-# ==========================================================================
-# 1. Componente Card do Post
-# ==========================================================================
-def create_post_card(parent, post_data, icones):
-    """Cria um cartão de post individual para o feed."""
-    print("começou!!")
-    global id
-    global user
-    global description
-    global day_time
-
-    name = dict(zip(user_df["id"], user_df["name"]))
-    
-    post = publication_df[publication_df["id"] == post_data["id"]].iloc[0]
-    midias_ids = [m["id"] for m in post["midia_list"]]
-
-
-    midias_do_post = midia_df[midia_df["id"].isin(midias_ids)]
-
-    user = name[post_data["user"]]
-    id = post_data["id"]
-    description = post_data["description"]
-    day_time = post_data["day"] +" "+post_data["times"]
-    
-# Frame principal do post
-    # Certifique-se de que colors é um dicionário ou objeto acessível por chave
-    bg_frame_color = colors.bg_frame if hasattr(colors, 'bg_frame') else colors["bg_frame"]
-    fg_text_color = colors.fg_text if hasattr(colors, 'fg_text') else colors["fg_text"]
-    icon_inactive_color = colors.icon_inactive_fg if hasattr(colors, 'icon_inactive_fg') else colors["icon_inactive_fg"]
-    bg_entry_color = colors.bg_entry if hasattr(colors, 'bg_entry') else colors["bg_entry"]
-    purple_button_color = colors.purple_button if hasattr(colors, 'purple_button') else colors["purple_button"]
-
-    card_frame = tk.Frame(parent, bg=bg_frame_color, padx=15, pady=15)
-    card_frame.pack(fill='x', padx=10, pady=(5, 10))
-    card_frame.columnconfigure(1, weight=1) # Faz a coluna do nome de usuário expandir
-    
-    # Ícone de Perfil (Mock)
-    profile_pic_mock = icones.get("profile_pic")
-    if profile_pic_mock:
-        # Usamos um Frame interno para garantir o alinhamento e padding
-        profile_frame = tk.Frame(card_frame, bg=bg_frame_color)
-        profile_frame.grid(row=0, column=0, rowspan=2, sticky='n', padx=(0, 10))
+    def __init__(self, master, switch_view_callback=None, icones=None):
+        self.switch_view_callback = switch_view_callback
+        super().__init__(master, bg=DARK_THEME_COLORS["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
         
-        tk.Label(profile_frame, 
-                 image=profile_pic_mock, 
-                 bg=bg_frame_color,
-                 width=30, height=30).pack()
-    
-    # Nome de Usuário
-    username_label = tk.Label(card_frame, 
-                              text=user, 
-                              font=font_roboto_big, 
-                              bg=bg_frame_color, 
-                              fg=fg_text_color,
-                              anchor='w')
-    username_label.grid(row=0, column=1, sticky='ew')
-    
-    # Data/Hora do Post (Mock)
-    time_label = tk.Label(card_frame, 
-                          text=day_time, 
-                          font=font_inter, 
-                          bg=bg_frame_color, 
-                          fg=icon_inactive_color,
-                          anchor='w')
-    time_label.grid(row=1, column=1, sticky='ew')
-    
-    # Texto do Post
-    text_label = tk.Label(card_frame, 
-                          text=description, 
-                          font=font_roboto, 
-                          bg=bg_frame_color, 
-                          fg=fg_text_color,
-                          wraplength=FRAME_WIDTH - 60, # Quebra de linha para caber
-                          justify=tk.LEFT,
-                          anchor='w')
-    text_label.grid(row=2, column=0, columnspan=2, sticky='ew', pady=(10, 5))
-    print("**********************************************")
-    print(midia_df)
-    print("**********************************************")
-    
-    # Imagem do Post (Mock)
-    if len(midias_do_post) != 0:
+        self.icones = icones or {}
+        self.pack_propagate(False)
+
+        self._create_widgets()
+
+
+    # ---------------------------------------------------------------------
+    # 1. Criar estrutura da tela
+    # ---------------------------------------------------------------------
+    def _create_widgets(self):
+        # ---------- Cabeçalho ----------
+        header = tk.Frame(self, bg=DARK_THEME_COLORS["bg_frame"], pady=10)
+        header.pack(fill='x')
+
+        tk.Label(header,
+                 text="MIAU",
+                 font=("Inter", 18, "bold"),
+                 bg=DARK_THEME_COLORS["bg_frame"],
+                 fg=DARK_THEME_COLORS["purple_button"]).pack()
+
+        # ---------- Área Rolável ----------
+        self.canvas = tk.Canvas(self, bg=DARK_THEME_COLORS["bg_main"], highlightthickness=0)
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        scrollbar = ttk.Scrollbar(self, orient='vertical',
+                                  command=self.canvas.yview)
+
+        scrollbar.pack(side="right", fill="y")
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+
+        self.feed_frame = tk.Frame(self.canvas, bg=DARK_THEME_COLORS["bg_main"])
+        self.canvas_window = self.canvas.create_window((0, 0),
+                                                       window=self.feed_frame,
+                                                       anchor="nw",
+                                                       width=FRAME_WIDTH)
+
+        # eventos de atualização
+        self.feed_frame.bind("<Configure>", self._update_scroll)
+        self.canvas.bind("<Configure>", self._update_scroll)
+
+        # carrega posts
+        self._load_feed()
+
+
+    # ---------------------------------------------------------------------
+    def _update_scroll(self, event):
+        """Mantém o scroll sempre correto."""
+        self.canvas.itemconfig(self.canvas_window, width=self.canvas.winfo_width())
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+
+    # ---------------------------------------------------------------------
+    # 2. Montar o Feed
+    # ---------------------------------------------------------------------
+    def _load_feed(self):
+        """Itera o DataFrame e cria cada card."""
+        for _, post in publication_df.iterrows():
+            self._create_post_card(post)
+
+
+    # ---------------------------------------------------------------------
+    # 3. Criar o card individual
+    # ---------------------------------------------------------------------
+    def _create_post_card(self, post_data):
+        """Cria um post no mesmo estilo da versão anterior, só que organizado."""
+        card = tk.Frame(self.feed_frame, bg=DARK_THEME_COLORS["bg_frame"], padx=15, pady=15)
+        card.pack(fill='x', padx=10, pady=10)
+
+        # dados do usuário
+        username = user_df[user_df["id"] == post_data["user"]]["name"].iloc[0]
+        text = post_data["description"]
+        timestamp = f"{post_data['day']} {post_data['times']}"
+
+        # ---------- Cabeçalho ----------
+        tk.Label(card,
+                 text=username,
+                 font=font_roboto_big,
+                 bg=DARK_THEME_COLORS["bg_frame"],
+                 fg=DARK_THEME_COLORS["fg_text"]).pack(anchor='w')
+
+        tk.Label(card,
+                 text=timestamp,
+                 font=font_inter,
+                 bg=DARK_THEME_COLORS["bg_frame"],
+                 fg=DARK_THEME_COLORS["icon_inactive_fg"]).pack(anchor='w')
+
+        # ---------- Texto ----------
+        tk.Label(card,
+                 text=text,
+                 font=font_roboto,
+                 bg=DARK_THEME_COLORS["bg_frame"],
+                 fg=DARK_THEME_COLORS["fg_text"],
+                 wraplength=FRAME_WIDTH - 60,
+                 justify='left').pack(anchor='w', pady=10)
+
+        # ---------- Imagem ----------
+        self._add_post_image(card, post_data)
+
+        # ---------- Ações ----------
+        actions = tk.Frame(card, bg=DARK_THEME_COLORS["bg_frame"])
+        actions.pack(fill='x', pady=5)
+
+        tk.Button(actions, text="❤️ Curtir",
+                  bg=DARK_THEME_COLORS["bg_frame"],
+                  fg=DARK_THEME_COLORS["icon_inactive_fg"],
+                  bd=0,
+                  font=font_inter).pack(side='left', padx=10)
+
+        tk.Button(actions, text="💬 Comentar",
+                  bg=DARK_THEME_COLORS["bg_frame"],
+                  fg=DARK_THEME_COLORS["icon_inactive_fg"],
+                  bd=0,
+                  font=font_inter).pack(side='left')
+
+
+    # ---------------------------------------------------------------------
+    def _add_post_image(self, parent, post_data):
+        """Carrega imagem se existir."""
+        midias_ids = [m["id"] for m in post_data["midia_list"]]
+        midias_do_post = midia_df[midia_df["id"].isin(midias_ids)]
+
+        if len(midias_do_post) == 0:
+            return
+
         image_path = midias_do_post.iloc[0]["original_path"]
-        
+
         try:
-            from PIL import Image, ImageTk
             img = Image.open(image_path)
             img = img.resize((350, 350), Image.Resampling.LANCZOS)
 
             photo = ImageTk.PhotoImage(img, master=parent)
+            parent.photo = photo
 
-
-            # manter referência para evitar GC
-            card_frame.photo = photo
-
-            img_container = tk.Frame(card_frame, bg=bg_frame_color)
-            img_container.grid(row=3, column=0, columnspan=2, pady=10)
-
-            img_label = tk.Label(img_container, image=photo, bg=bg_entry_color)
-            img_label.image = photo  # mantém referência viva
-            img_label.pack()
-
-    
+            tk.Label(parent, image=photo, bg=DARK_THEME_COLORS["bg_frame"]).pack(pady=10)
         except Exception as e:
             print("Erro carregando imagem:", e)
-            print("Path recebido:", image_path)
-        else:
-            print("Post sem mídia")
-        
-
-    # Barra de Ações (Likes, Comentários)
-    actions_frame = tk.Frame(card_frame, bg=bg_frame_color)
-    actions_frame.grid(row=4, column=0, columnspan=2, sticky='ew', pady=(5, 0))
-    
-    # Função mock para botões de ação
-    def mock_action(action, user):
-        print(f"Ação {action} no post de {user}")
-
-    # Botão Curtir (Mock com Emoji)
-    like_btn = tk.Button(actions_frame, text="❤️ Curtir", 
-                         command=lambda: mock_action("Curtir", post_data["user"]),
-                         bg=bg_frame_color, fg=icon_inactive_color, bd=0, 
-                         activebackground=bg_entry_color, activeforeground=purple_button_color, 
-                         cursor="hand2", font=font_inter)
-    like_btn.pack(side=tk.LEFT, padx=(0, 15))
-
-    # Botão Comentar (Mock com Emoji)
-    comment_btn = tk.Button(actions_frame, text="💬 Comentar", 
-                            command=lambda: mock_action("Comentar", post_data["user"]),
-                            bg=bg_frame_color, fg=icon_inactive_color, bd=0, 
-                            activebackground=bg_entry_color, activeforeground=purple_button_color, 
-                            cursor="hand2", font=font_inter)
-    comment_btn.pack(side=tk.LEFT)
-
-# ==========================================================================
-# 2. View Principal (HomeView)
-# ==========================================================================
-def HomeView(master, switch_view_callback, icones):
-    """
-    Cria e exibe a tela principal do Feed.
-
-    Args:
-        master (tk.Frame): O frame pai.
-        switch_view_callback (function): Função para trocar a view principal.
-        icones (dict): Dicionário contendo os PhotoImages dos ícones.
-    """
-    # 1. Configuração do Frame Principal da View
-    bg_main_color = colors.bg_main if hasattr(colors, 'bg_main') else colors["bg_main"]
-    bg_frame_color = colors.bg_frame if hasattr(colors, 'bg_frame') else colors["bg_frame"]
-    purple_button_color = colors.purple_button if hasattr(colors, 'purple_button') else colors["purple_button"]
-    bg_entry_color = colors.bg_entry if hasattr(colors, 'bg_entry') else colors["bg_entry"]
-    fg_text_color = colors.fg_text if hasattr(colors, 'fg_text') else colors["fg_text"]
-
-    main_frame = tk.Frame(master, bg=bg_main_color, width=FRAME_WIDTH, height=FRAME_HEIGHT)
-    main_frame.pack_propagate(False)
-    
-    # 2. Cabeçalho da View (Barra Superior Simples)
-    header_frame = tk.Frame(main_frame, bg=bg_frame_color, padx=10, pady=10)
-    header_frame.pack(fill='x')
-    
-    tk.Label(header_frame, 
-             text="MIAU", 
-             font=("Inter", 18, "bold"), 
-             bg=bg_frame_color, 
-             fg=purple_button_color).pack(pady=5)
-    
-    # 3. Área de Conteúdo (Rolável)
-    # Cria um Canvas para permitir a rolagem
-    canvas = tk.Canvas(main_frame, bg=bg_main_color, highlightthickness=0)
-    canvas.pack(side="left", fill="both", expand=True, padx=0, pady=0)
-    
-    # Scrollbar
-    style = ttk.Style()
-    style.theme_use('default')
-    # Configura a Scrollbar para o tema escuro
-    style.configure("Vertical.TScrollbar", background=bg_entry_color, troughcolor=bg_main_color, arrowcolor=fg_text_color)
-
-    scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview, style="Vertical.TScrollbar")
-    scrollbar.pack(side="right", fill="y")
-    
-    canvas.configure(yscrollcommand=scrollbar.set)
-    
-    # Frame interno onde o conteúdo será empacotado (o feed)
-    content_frame = tk.Frame(canvas, bg=bg_main_color)
-    
-    # Cria a janela no canvas
-    canvas_window = canvas.create_window((0, 0), window=content_frame, anchor="nw", width=FRAME_WIDTH)
-    
-    # Função para atualizar o scroll region e o tamanho do frame interno
-    def update_scroll_region(event):
-        # Garante que o frame interno tenha a largura do canvas
-        canvas.itemconfig(canvas_window, width=canvas.winfo_width())
-        # Atualiza a região de rolagem para incluir todo o conteúdo do frame interno
-        canvas.configure(scrollregion=canvas.bbox("all"))
-        
-    content_frame.bind("<Configure>", update_scroll_region)
-    canvas.bind('<Configure>', update_scroll_region) 
-    
-    # Habilitar rolagem com o mouse wheel
-    if sys.platform.startswith('win'): # Windows
-        canvas.bind_all('<MouseWheel>', lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
-    elif sys.platform.startswith('linux'): # Linux
-        canvas.bind_all('<Button-4>', lambda e: canvas.yview_scroll(-1, "units"))
-        canvas.bind_all('<Button-5>', lambda e: canvas.yview_scroll(1, "units"))
-
-    # 4. Popula o Feed com os Cards de Post
-    #troca do mock, teste pelo data frame
-
-    for _, post in publication_df.iterrows():
-        create_post_card(content_frame, post, icones)
-
-    # 5. Exibir a View
-    return main_frame
-
-
-# ==========================================================================
-# TESTE (Execução Individual)
-# ==========================================================================
-#if __name__ == "__main__":
-#    # Usa a função de setup do utils_icons para inicializar a janela
-#    test_window, root, icones = setup_test_window("Home View Teste")
-#    
-#    if test_window:
-#        # Frame container para simular o corpo do aplicativo
-#        app_body = tk.Frame(test_window, bg=colors.bg_main if hasattr(colors, 'bg_main') else colors["bg_main"])
-#        app_body.pack(fill="both", expand=True)
-#
-#        # Função de callback de mock para a navegação
-#        def mock_switch_view(view_name):
-#            print(f"Navegação Mock: Trocando para {view_name}")
-#
-#        # Cria e exibe a view de Home
-#        home_frame = HomeView(app_body, mock_switch_view, icones)
-#        home_frame.pack(fill="both", expand=True)
-#
-#        # Mocka a BottomBar para garantir que o GC não colete os PhotoImages
-#        try:
-#            from utils_icons import BottomBar # Importa a barra inferior para o teste
-#            current_view_state = tk.StringVar(value="Home")
-#            
-#            # Cria a barra, embora não seja usada para navegação real no teste, 
-#            # garante que as dependências do PhotoImage sejam resolvidas.
-#            bottom_bar_frame = BottomBar(test_window, mock_switch_view, icones, current_view_state)
-#            bottom_bar_frame.pack(fill="x", side=tk.BOTTOM)
-#        except ImportError:
-#            print("BottomBar não pôde ser importada para o teste. Apenas a HomeView será exibida.")
-#            
-#        test_window.mainloop()
-#        # Após fechar o Toplevel, certifique-se de fechar a raiz
-#        try:
-#            root.destroy()
-#        except:
-#            pass
-#    else:
-#        print("Falha na inicialização da janela de teste. Verifique as dependências.")

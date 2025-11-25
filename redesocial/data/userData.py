@@ -20,7 +20,7 @@ user_df.loc[len(user_df)] = {
     "id": 1,
     "name": "Gabriel",
     "email": "gabriel@example.com",
-    "password": "12345",
+    "password": "12345678",
     "birthday": 23,
     "birth_month": 7,
     "birth_year": 2006,

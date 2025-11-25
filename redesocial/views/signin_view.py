@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
-
+from redesocial.controller.authController import loginController
 
 #  Defis de Fallback 
 
@@ -190,16 +190,17 @@ class CustomEntry(tk.Frame):
 class SigninView(tk.Frame):
     """Tela de login de usuário"""
     def __init__(self, master, switch_view_callback=None, *args, **kwargs):
-        super().__init__(master, bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
        
-
+        super().__init__(master, bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
         self.switch_view_callback = switch_view_callback
         
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        
+
         self.pack_propagate(False)
 
         self._create_widgets()
-        print("SigninView carregado com sucesso!")
+        
     def _create_widgets(self):
         # Frame de Conteúdo Principal 
         
@@ -261,7 +262,7 @@ class SigninView(tk.Frame):
         
         signup_link_text = tk.Button(footer_frame,
                                  text="Cadastre-se",
-                                 command=lambda: self._go_to_view("Signup"),
+                                 command=lambda: self._go_to_view("signup"),
                                  font=font_inter_small + ("underline",),
                                  bg=colors["bg_main"],
                                  
@@ -293,13 +294,14 @@ class SigninView(tk.Frame):
         if len(password) < 8:
             messagebox.showerror("Erro de Login", "Senha inválida (simulação: deve ter 8+ caracteres).")
             return
-            
-      
-        messagebox.showinfo("Sucesso", f"Login realizado com sucesso para: {user_email}!")
         
-        # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
-        if self.switch_view_callback:
-            self.switch_view_callback("Home")
+        result = loginController(tk.Frame,user_email,password)
+        if result != None:
+            messagebox.showinfo("Sucesso", f"Login realizado com sucesso para: {user_email}!")
+        
+            # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
+            if self.switch_view_callback:
+                self.switch_view_callback("home")
 
 
 #Teste de Execução Individual

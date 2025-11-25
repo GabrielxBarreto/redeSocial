@@ -39,7 +39,7 @@ class AuthService:
         
         # Filtra o DataFrame pelo nome E pela senha
         result = user_df[(user_df["name"] == name) & (user_df["password"] == password)]
-        
+        print(user_df)
         if not result.empty:
             # Retorna o objeto UserMock (ou o ID, se você preferir)
             user_id = result.iloc[0]["id"]
@@ -47,7 +47,7 @@ class AuthService:
             
             print("Login realizado com sucesso, Bem vindo "+user.name+"!")
             # Retorna o objeto UserMock que tem o .name e .password (compatível com o controller)
-            return user 
+            return user_id
         else:
             print("Usuário ou senha incorretos")
             return None

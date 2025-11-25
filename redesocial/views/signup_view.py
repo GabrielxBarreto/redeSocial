@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
+from  ..controller.authController import signupController
 
 # 1. Definições de Cores e Fontes AUTONOMO
 
@@ -149,11 +150,12 @@ class CustomEntry(tk.Frame):
 class SignupView(tk.Frame):
     """Tela de cadastro de novo usuário com suporte a rolagem (Scrollbar)."""
     def __init__(self, master, switch_view_callback=None, icones=None, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
+        super().__init__(master)
         self.switch_view_callback = switch_view_callback
         self.icones = icones if icones else {} 
         
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        
         self.pack_propagate(False)
 
         self._create_scrollable_widgets()
@@ -292,14 +294,12 @@ class SignupView(tk.Frame):
 
     def _go_back(self):
         """Simula a ação de voltar, ou chama o callback se fornecido."""
-        if self.switch_view_callback:
-            self.switch_view_callback("SignIn") 
-        else:
-            messagebox.showinfo("Navegação Mock", "Ação de Voltar (SignIn View) - Faria a troca de tela.")
+        self.switch_view_callback("signin") 
 
     def _handle_signup(self):
         """Processa a tentativa de cadastro e valida os campos."""
         user = self.entry_user.get_value()
+        print(type(user))
         password = self.entry_password.get_value()
         email = self.entry_email.get_value()
         day = self.entry_day.get_value()
@@ -326,12 +326,11 @@ class SignupView(tk.Frame):
         except ValueError:
             messagebox.showerror("Erro de Data", "A data de nascimento deve conter apenas números.")
             return
-        
-        messagebox.showinfo("Sucesso", f"Conta criada para o usuário: {user}!\nEmail: {email}\nNasc.: {day}/{month}/{year}\nGênero: {gender if gender else 'Não Informado'}")
+        signupController(self.master,user,email,password,day,month,year,gender)
         
         # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
         if self.switch_view_callback:
-            self.switch_view_callback("Home")
+            self.switch_view_callback("home")
 
 
 #  Teste de Execução Individual
