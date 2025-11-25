@@ -5,6 +5,7 @@ import sys
 from PIL import Image, ImageTk 
 
 
+
 # 1. Defis de Fallback e Importação Robusta (Replicando as definições de cor)
 
 
@@ -145,7 +146,7 @@ class WelcomeView(tk.Frame):
         # 4. Botão Começar
         start_button = tk.Button(content_frame,
                                  text="Começar",
-                                 command=lambda: self._go_to_view("Signup"),
+                                 command=lambda: self._go_to_view("Signin"),
                                  bg=colors["accent_color"],
                                  fg=colors["fg_text"],
                                  font=font_roboto_big,
@@ -167,24 +168,3 @@ class WelcomeView(tk.Frame):
 
 # Teste de Execução Individual
 
-if __name__ == "__main__":
-    
-    # Config do ambiente de teste 
-    root = tk.Tk()
-    root.title("Welcome View Teste")
-    root.geometry(f"{FALLBACK_WIDTH}x{FALLBACK_HEIGHT}")
-    
-    test_frame = tk.Frame(root)
-    test_frame.pack(fill="both", expand=True)
-    
-    def switch_view(view_name):
-        test_frame.place_forget()
-        
-    
-    welcome_app = WelcomeView(
-        test_frame,
-        switch_view
-    )
-    welcome_app.pack(fill="both", expand=True)
-    
-    root.mainloop()

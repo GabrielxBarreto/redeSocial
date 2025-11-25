@@ -190,14 +190,16 @@ class CustomEntry(tk.Frame):
 class SigninView(tk.Frame):
     """Tela de login de usuário"""
     def __init__(self, master, switch_view_callback=None, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
+        super().__init__(master, bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
+       
+
         self.switch_view_callback = switch_view_callback
         
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
         self.pack_propagate(False)
 
         self._create_widgets()
-        
+        print("SigninView carregado com sucesso!")
     def _create_widgets(self):
         # Frame de Conteúdo Principal 
         
@@ -302,62 +304,59 @@ class SigninView(tk.Frame):
 
 #Teste de Execução Individual
 
-
-if __name__ == "__main__":
-    
-    # Config do ambiente de teste com setup_test_window
-    if 'setup_test_window' in locals() and setup_test_window:
-        try:
-            # Garante a definição de cores para o teste antes de inicializar o Tk
-            if "bg_entry" not in colors:
-                 colors["bg_entry"] = FALLBACK_COLORS["bg_entry"]
-            if "fg_secondary" not in colors:
-                 colors["fg_secondary"] = FALLBACK_COLORS["fg_secondary"]
-            if "accent_color_hover" not in colors:
-                 colors["accent_color_hover"] = FALLBACK_COLORS["accent_color_hover"]
-            if "icon_active_fg" not in colors:
-                 colors["icon_active_fg"] = FALLBACK_COLORS["icon_active_fg"]
-            if "signup_link_fg" not in colors:
-                colors["signup_link_fg"] = FALLBACK_COLORS["signup_link_fg"]
-            if "signup_link_active_fg" not in colors:
-                colors["signup_link_active_fg"] = FALLBACK_COLORS["signup_link_active_fg"]
-
-            test_window, root, icones = setup_test_window("Sign In View Teste")
-        except Exception as e:
-            print(f"Erro ao usar setup_test_window: {e}. Usando setup manual.")
-            test_window = None 
-
-    
-    if not 'root' in locals() or not 'test_window' in locals() or test_window is None:
-        # Usa o setup manual 
-        root = tk.Tk()
-        root.title("Sign In View Teste (Manual)")
-        
-        root.geometry(f"{FRAME_WIDTH}x{FRAME_HEIGHT}")
-        
-        test_window = tk.Frame(root)
-        test_window.pack(fill="both", expand=True)
-        icones = {}
-    
-    # Callback mock para a troca de tela
-    def switch_view_mock(view_name):
-        print(f"DEBUG: Tentativa de trocar para a view: {view_name}")
-        for widget in test_window.winfo_children():
-            widget.destroy()
-        
-        tk.Label(test_window,
-                 text=f"Redirecionado para a View: {view_name}",
-                 font=font_roboto_big,
-                 bg=colors["bg_main"],
-                 fg=colors["fg_text"]).pack(pady=FRAME_HEIGHT / 2 - 50)
-        
-    
-    
-    signin_app = SigninView(
-        test_window,
-        switch_view_mock
-    )
-    signin_app.pack(fill="both", expand=True)
-    
-   
-    root.mainloop()
+#
+#if __name__ == "__main__":
+#    
+#    # Config do ambiente de teste com setup_test_window
+#    if 'setup_test_window' in locals() and setup_test_window:
+#        try:
+#            # Garante a definição de cores para o teste antes de inicializar o Tk
+#            if "bg_entry" not in colors:
+#                 colors["bg_entry"] = FALLBACK_COLORS["bg_entry"]
+#            if "fg_secondary" not in colors:
+#                 colors["fg_secondary"] = FALLBACK_COLORS["fg_secondary"]
+#            if "accent_color_hover" not in colors:
+#                 colors["accent_color_hover"] = FALLBACK_COLORS["accent_color_hover"]
+#            if "icon_active_fg" not in colors:
+#                 colors["icon_active_fg"] = FALLBACK_COLORS["icon_active_fg"]
+#            if "signup_link_fg" not in colors:
+#                colors["signup_link_fg"] = FALLBACK_COLORS["signup_link_fg"]
+#            if "signup_link_active_fg" not in colors:
+#                colors["signup_link_active_fg"] = FALLBACK_COLORS["signup_link_active_fg"]
+#
+#            test_window, root, icones = setup_test_window("Sign In View Teste")
+#        except Exception as e:
+#            print(f"Erro ao usar setup_test_window: {e}. Usando setup manual.")
+#            test_window = None 
+#
+#    
+#    if not 'root' in locals() or not 'test_window' in locals() or test_window is None:
+#        # Usa o setup manual 
+#        root.title("Sign In View Teste (Manual)")
+#        
+#        root.geometry(f"{FRAME_WIDTH}x{FRAME_HEIGHT}")
+#        
+#        test_window = tk.Frame(root)
+#        test_window.pack(fill="both", expand=True)
+#        icones = {}
+#    
+#    # Callback mock para a troca de tela
+#    def switch_view_mock(view_name):
+#        print(f"DEBUG: Tentativa de trocar para a view: {view_name}")
+#        for widget in test_window.winfo_children():
+#            widget.destroy()
+#        
+#        tk.Label(test_window,
+#                 text=f"Redirecionado para a View: {view_name}",
+#                 font=font_roboto_big,
+#                 bg=colors["bg_main"],
+#                 fg=colors["fg_text"]).pack(pady=FRAME_HEIGHT / 2 - 50)
+#        
+#    
+#    
+#    signin_app = SigninView(
+#        test_window,
+#        switch_view_mock
+#    )
+#    signin_app.pack(fill="both", expand=True)
+#    

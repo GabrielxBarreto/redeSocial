@@ -1,24 +1,34 @@
+import tkinter as tk
+from .views.welcome_view import WelcomeView
+from .views.signin_view import SigninView
 
-from .views.welcome_view import *
-from .views.signin_view import *
+root = tk.Tk()
+root.geometry("400x600")
 
-if __name__ == "__main__":
+current_view = None
 
-    root = tk.Tk()
-    root.title("Welcome View Teste")
-    root.geometry(f"{FALLBACK_WIDTH}x{FALLBACK_HEIGHT}")
-    
-    test_frame = tk.Frame(root)
-    test_frame.pack(fill="both", expand=True)
-    
-    def switch_view(view_name):
-        messagebox.showinfo("Navegação", f"Navegar para a View: {view_name}")
-    
-    welcome_app = WelcomeView(
-        test_frame,
-        switch_view
-    )
-    welcome_app.pack(fill="both", expand=True)
-    
-    root.mainloop()
-   
+def switch_view(view_name):
+    global current_view
+
+    # remove a view atual
+    if current_view:
+        current_view.destroy()
+
+    # cria a próxima
+    if view_name == "welcome":
+        current_view = WelcomeView(root, switch_view)
+    elif view_name == "signin":
+        current_view = SigninView(root, switch_view)
+    else:
+        current_view = tk.Label(root, text="TBD...")
+
+    current_view.pack(fill="both", expand=True)
+
+# cria as telas
+welcome_frame = WelcomeView(root, switch_view)
+login_frame = SigninView(root, switch_view)
+
+# começa mostrando a welcome
+welcome_frame.pack(fill="both", expand=True)
+
+root.mainloop()
