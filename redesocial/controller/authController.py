@@ -32,12 +32,13 @@ def loginController(root, entry_name=None, entry_password=None):
 
     if result is None:
         messagebox.showerror("Erro", "Login Falhou!")
+        return -1
     else:
         messagebox.showinfo("OK", "Login bem-sucedido!")
-        
+        return result
         # Abre a tela Home e esconde a tela de Login
         #abrir_home(name, root) 
-        root.withdraw()
+        #root.withdraw()
 
 
 def signupController(root, entry_name, entry_email, entry_password, entry_day, entry_month, entry_year, entry_gender):

@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
+import traceback
 from redesocial.controller.authController import loginController
 
 #  Defis de Fallback 
@@ -189,11 +190,12 @@ class CustomEntry(tk.Frame):
 
 class SigninView(tk.Frame):
     """Tela de login de usuário"""
-    def __init__(self, master, switch_view_callback=None, *args, **kwargs):
+    def __init__(self, master, switch_view_callback=None, root=None, *args, **kwargs):
        
         super().__init__(master, bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        self.session = 0
         self.switch_view_callback = switch_view_callback
-        
+        self.root= root
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
         
 
@@ -295,13 +297,22 @@ class SigninView(tk.Frame):
             messagebox.showerror("Erro de Login", "Senha inválida (simulação: deve ter 8+ caracteres).")
             return
         
-        result = loginController(tk.Frame,user_email,password)
-        if result != None:
+        try:
+            result = loginController(self.root, user_email, password)
+        except Exception as e:
+            print("ERRO NO LOGIN:", e)
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Erro interno", str(e))
+            return
+        if result != -1 and result != None:  # login bem-sucedido
             messagebox.showinfo("Sucesso", f"Login realizado com sucesso para: {user_email}!")
-        
-            # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
+            self.session = result
             if self.switch_view_callback:
                 self.switch_view_callback("home")
+        else:
+            # Não troca de tela
+            return
 
 
 #Teste de Execução Individual

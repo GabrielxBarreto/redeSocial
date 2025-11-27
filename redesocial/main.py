@@ -15,11 +15,11 @@ root.geometry("400x600")
 # container fixo
 app_container = tk.Frame(root)
 app_container.pack(fill="both", expand=True)
-
+session = None
 current_view = None
 
 def switch_view(name):
-    global current_view
+    global current_view, session
 
     # limpa apenas o container, não o root
     for widget in app_container.winfo_children():
@@ -28,17 +28,19 @@ def switch_view(name):
     if name == "welcome":
         current_view = WelcomeView(app_container, switch_view_callback=switch_view)
     elif name == "signin":
-        current_view = SigninView(app_container, switch_view_callback=switch_view)
+        current_view = SigninView(app_container, switch_view_callback=switch_view,root=root)
+        session = current_view.session
     elif name == "signup":
         current_view = SignupView(app_container, switch_view_callback=switch_view)
     elif name == "home":
-        print("entrando na home")
-        current_view = HomeFeedView(app_container, switch_view_callback=switch_view)
+        print("carregamdo os dados de"+str(session))
+
+        current_view = HomeFeedView(app_container, switch_view_callback=switch_view, session = session)
     elif name == "projects":
         print("entrando na projects")
         current_view = ProjectsView(app_container, switch_view_callback=switch_view)
     elif name == "novoprojeto":
-        print("entrando na projects")
+        print("entrando na new projects")
         current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None)
     elif name == "ranking":
         current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None)

@@ -5,6 +5,7 @@ import sys
 import os
 from PIL import Image, ImageTk
 import pandas as pd 
+from ..data.userData import user_df
 
 # --- Importações de Dados e Utils ---
 
@@ -183,7 +184,7 @@ class BottomBar(tk.Frame):
             
     def _show_mock_action(self, view_name):
         """Ação de callback mock para outras views."""
-        messagebox.showinfo("Navegação Mock", f"Função para ir para {view_name}")
+        
         self.switch_view_callback(view_name) 
 
 
@@ -193,14 +194,16 @@ class BottomBar(tk.Frame):
 class HomeFeedView(tk.Frame):
     """Tela principal de Feed organizada no mesmo padrão das views Signin/Signup/Welcome"""
 
-    def __init__(self, master, switch_view_callback=None, icones=None):
+    def __init__(self, master, switch_view_callback=None, icones=None,session = None):
         self.switch_view_callback = switch_view_callback
+        self.session = session
         super().__init__(master, bg=DARK_THEME_COLORS["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
-        
+        print(session)
+        print(user_df[user_df["id"] == session])
         # O carregamento dos ícones deve ser feito ANTES de criar a view principal
         self.icones = icones or load_navbar_icons(master) # Fallback para carregar se não vier injetado
         self.pack_propagate(False)
-
+        
         self._create_widgets()
         self._create_bottom_bar() # Chamada para criar a Navbar
 
