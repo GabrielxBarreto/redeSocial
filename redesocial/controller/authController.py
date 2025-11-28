@@ -59,7 +59,7 @@ def signupController(root, entry_name, entry_email, entry_password, entry_day, e
         if user_obj:
             messagebox.showinfo("OK", "Cadastro concluído. Acessando...")
             # Faz login automático
-            loginController(root, user_obj.name, user_obj.password)
+            return loginController(root, user_obj.name, user_obj.password)
         
     except ValueError as e:
         messagebox.showerror("Erro de Cadastro", str(e))

@@ -40,7 +40,7 @@ class CustomEntry(tk.Frame):
         self.is_password = is_password
         self.show_password = not is_password
         self.var = tk.StringVar()
-        
+        self.session = 0
         self.entry_border_color = colors["bg_entry_border"] 
 
         self._create_widgets()
@@ -326,11 +326,26 @@ class SignupView(tk.Frame):
         except ValueError:
             messagebox.showerror("Erro de Data", "A data de nascimento deve conter apenas números.")
             return
-        signupController(self.master,user,email,password,day,month,year,gender)
         
-        # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
-        if self.switch_view_callback:
-            self.switch_view_callback("home")#adicionar a session?
+        try:
+            result = signupController(self.master,user,email,password,day,month,year,gender)
+            self.session = result
+            print("DEBUG view signup: ", self.session)
+        except Exception as e:
+            print("ERRO NO LOGIN:", e)
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Erro interno", str(e))
+            return
+        if result != -1 and result != None:  # login bem-sucedido
+            messagebox.showinfo("Sucesso", f"Login realizado com sucesso para cadastro -> login!")
+            self.session = result
+            if self.switch_view_callback:
+                self.switch_view_callback("home",self.session)
+        else:
+            messagebox.showinfo("Erro em ao cadastrar!")
+            return
+
 
 
 #  Teste de Execução Individual

@@ -1,10 +1,11 @@
 from ..model.user import User
 from ..model.publication import Publication
+from ..data.admData import adm_df
 class Adm(User):
     count = 0
     def __init__(self,name,email,password,birthday,birth_month,birth_year,gender,status,post_list:list[Publication],tags:list[str]):
         super.__init__(name,email,password,birthday,birth_month,birth_year,gender,status,post_list,tags)
-        Adm.count += 1
+        Adm.count += 1 + len(adm_df)
         self.id_adm = Adm.count
     @property
     def id_adm(self):

@@ -115,13 +115,13 @@ def load_navbar_icons(root_window, size=(28, 28)):
 class BottomBar(tk.Frame):
     """Cria a barra de navegação inferior com 5 ícones."""
     
-    def __init__(self, master, switch_view_callback, icones, *args, **kwargs):
+    def __init__(self, master, switch_view_callback, icones, session=None,*args, **kwargs):
         super().__init__(master, *args, **kwargs)
         
         bg_frame_color = DARK_THEME_COLORS['bottom_bar_bg']
         icon_inactive_color = DARK_THEME_COLORS['icon_inactive_fg']
         icon_active_color = DARK_THEME_COLORS['icon_active_fg']
-        
+        self.session =session
         self.config(bg=bg_frame_color, pady=5)
         self.columnconfigure((0, 1, 2, 3, 4), weight=1) 
         
@@ -185,7 +185,7 @@ class BottomBar(tk.Frame):
     def _show_mock_action(self, view_name):
         """Ação de callback mock para outras views."""
         
-        self.switch_view_callback(view_name) 
+        self.switch_view_callback(view_name,self.session) 
 
 
 # ==========================================================================
@@ -261,7 +261,8 @@ class HomeFeedView(tk.Frame):
             self, # Coloca a barra DENTRO da HomeFeedView
             self.switch_view_callback,
             self.icones,
-            bg=DARK_THEME_COLORS["bottom_bar_bg"]
+            bg=DARK_THEME_COLORS["bottom_bar_bg"],
+            session = self.session
         )
         # Empacota no fundo da HomeFeedView (que é a própria self)
         self.bottom_bar.pack(fill="x", side=tk.BOTTOM) 

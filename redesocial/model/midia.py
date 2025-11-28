@@ -1,7 +1,8 @@
+from ..data.midiaData import midia_df
 class Midia:
     count = 0
     def __init__(self, type, size, name, original_path,id_user,id_publication):
-        Midia.count += 1
+        Midia.count += 1 + len(midia_df)
         self.id = Midia.count
         self._type = type
         self._size = size

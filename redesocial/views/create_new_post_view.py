@@ -16,12 +16,14 @@ class NovoPostView(tk.Frame):
     Tela/Frame para criar um novo post.
     Pode ser chamado pelo main.py com switch_view.
     """
+    global session_global
 
-    def __init__(self, master, icones=None, session_id=1, switch_view_callback = None,*args, **kwargs):
+    def __init__(self, master, icones=None, session=None, switch_view_callback = None,*args, **kwargs):
         super().__init__(master, bg=colors["bg_frame"], *args, **kwargs)
         self.switch_view_callback = switch_view_callback
         self.icones = icones or {}
-        self.session_id = session_id  # id de usuário/logado (mock)
+        self.session = session  # id de usuário/logado (mock)
+        session_global = self.session
         self.pack_propagate(False)
         self._create_widgets()
 
@@ -86,7 +88,7 @@ class NovoPostView(tk.Frame):
             return
         
         archive = None  # mock de arquivo
-        new_post(self.session_id, archive, f"{titulo}:{conteudo}")
+        new_post(session_global, archive, f"{titulo}:{conteudo}")
 
         messagebox.showinfo("Sucesso", f"Postagem '{titulo}' publicada!\nConteúdo: {conteudo[:50]}...")
 

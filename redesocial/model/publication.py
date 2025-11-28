@@ -1,9 +1,10 @@
 from ..model.midia import Midia
+from ..data.publicationData import publication_df
 class Publication:
     count = 0 
     def __init__(self, type, midia_list:list[Midia], description, user,tags_list,day,times):
         
-        Publication.count += 1
+        Publication.count += 1 + len(publication_df)
         self.id = Publication.count
         self._type = type
         self._midia_list = midia_list

@@ -4,6 +4,7 @@ import os
 from PIL import Image, ImageTk, ImageDraw
 import sys
 from ..data.userData import user_df 
+global session_global
 # --- Configurações e Cores ---
 BG_MAIN = "#1A1A1A"
 ACCENT_COLOR = "#6F42C1"
@@ -23,6 +24,7 @@ class UserProfileView(tk.Frame):
         super().__init__(master, bg=BG_MAIN)
         self.master = master
         self.session=session
+        session_global = self.session
         user = user_df[user_df["id"]== session]
         print("teste de usuario profile: ",user)
         
@@ -154,7 +156,10 @@ class UserProfileView(tk.Frame):
         
         
         # Username (@)
-        username_label = tk.Label(self.info_frame, text=f"@{self.session}",
+        name_User = user_df.loc[user_df["id"] == self.session, "name"].values[0]
+
+        print("DEBUG profile:",self.session)
+        username_label = tk.Label(self.info_frame, text=f"@{name_User}",
                                      fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 11), anchor="w")
         username_label.pack(fill="x", pady=(0, 5))
 
@@ -183,13 +188,15 @@ class UserProfileView(tk.Frame):
 
         # --- 4. Abas de Conteúdo (Row 2) ---
         style = ttk.Style()
-        style.theme_create("CustomStyle", parent="alt", settings={
-            "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0], "background": BG_MAIN}},
+        if "CustomStyle" not in style.theme_names():
+            style.theme_create("CustomStyle", parent="alt", settings={
+        "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0], "background": BG_MAIN}},
             "TNotebook.Tab": {
                 "configure": {"padding": [10, 4], "background": BG_MAIN, "foreground": SUBTEXT_COLOR, "font": ('Arial', 9, 'bold')},
                 "map": {"background": [("selected", BG_MAIN)], "foreground": [("selected", ACCENT_COLOR)]}
             }
         })
+            
         style.theme_use("CustomStyle")
 
         self.notebook = ttk.Notebook(self)

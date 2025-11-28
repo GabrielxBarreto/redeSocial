@@ -1,9 +1,10 @@
 from ..model.publication import Publication
+from ..data.userData import user_df
 class User:
     count = 0 
     
     def __init__(self,name,email,password,birthday,birth_month,birth_year,gender,status,post_list:list[Publication],tags:list[str]):
-        User.count += 1
+        User.count += 1 + len(user_df)
         self.id = User.count
         self.__name = name
         self.__email = email
