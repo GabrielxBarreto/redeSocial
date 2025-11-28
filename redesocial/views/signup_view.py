@@ -330,7 +330,7 @@ class SignupView(tk.Frame):
         
         # Em uma aplicação real, o usuário seria redirecionado para o Home Feed
         if self.switch_view_callback:
-            self.switch_view_callback("home")
+            self.switch_view_callback("home")#adicionar a session?
 
 
 #  Teste de Execução Individual

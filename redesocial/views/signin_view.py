@@ -299,6 +299,8 @@ class SigninView(tk.Frame):
         
         try:
             result = loginController(self.root, user_email, password)
+            self.session = result
+            print("DEBUG view sigin: ", self.session)
         except Exception as e:
             print("ERRO NO LOGIN:", e)
             import traceback
@@ -309,7 +311,7 @@ class SigninView(tk.Frame):
             messagebox.showinfo("Sucesso", f"Login realizado com sucesso para: {user_email}!")
             self.session = result
             if self.switch_view_callback:
-                self.switch_view_callback("home")
+                self.switch_view_callback("home",self.session)
         else:
             # Não troca de tela
             return

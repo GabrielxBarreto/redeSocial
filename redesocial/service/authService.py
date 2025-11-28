@@ -47,6 +47,7 @@ class AuthService:
             
             print("Login realizado com sucesso, Bem vindo "+user.name+"!")
             # Retorna o objeto UserMock que tem o .name e .password (compatível com o controller)
+            print("DEBUG LOGIN: ",user_id)
             return user_id
         else:
             print("Usuário ou senha incorretos")

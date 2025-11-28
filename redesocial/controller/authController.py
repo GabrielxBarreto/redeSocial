@@ -29,6 +29,7 @@ def loginController(root, entry_name=None, entry_password=None):
 
     # Chama o método login do service
     result = USER_AUTH_SERVICE.login(name, password)
+    print("DEBUG controller: ",result)
 
     if result is None:
         messagebox.showerror("Erro", "Login Falhou!")

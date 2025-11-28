@@ -18,8 +18,8 @@ app_container.pack(fill="both", expand=True)
 session = None
 current_view = None
 
-def switch_view(name):
-    global current_view, session
+def switch_view(name,session=None):
+    global current_view
 
     # limpa apenas o container, não o root
     for widget in app_container.winfo_children():
@@ -29,22 +29,24 @@ def switch_view(name):
         current_view = WelcomeView(app_container, switch_view_callback=switch_view)
     elif name == "signin":
         current_view = SigninView(app_container, switch_view_callback=switch_view,root=root)
-        session = current_view.session
+        
     elif name == "signup":
         current_view = SignupView(app_container, switch_view_callback=switch_view)
     elif name == "home":
         print("carregamdo os dados de"+str(session))
 
         current_view = HomeFeedView(app_container, switch_view_callback=switch_view, session = session)
+        
     elif name == "projects":
         print("entrando na projects")
-        current_view = ProjectsView(app_container, switch_view_callback=switch_view)
+        current_view = ProjectsView(app_container, switch_view_callback=switch_view, session = session)
     elif name == "novoprojeto":
         print("entrando na new projects")
-        current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None)
+        current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None, session = session)
     elif name == "ranking":
-        current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None)
+        current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None,  session = session)
     elif name == "profile":
+        #teste!!!
         mock_user_data = {
         'name': 'Gabriel',
         'username': 'gab_dev',
@@ -56,9 +58,10 @@ def switch_view(name):
         
         current_view = UserProfileView(
         app_container, 
-        user_data=mock_user_data, 
+        user_data= mock_user_data, 
+        session = session,
         navigate_back_callback=switch_view  # <-- aqui
-)
+        )
     else:
         current_view = tk.Label(app_container, text="Tela não encontrada.")
 

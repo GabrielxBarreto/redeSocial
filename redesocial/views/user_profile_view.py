@@ -3,7 +3,7 @@ from tkinter import ttk
 import os
 from PIL import Image, ImageTk, ImageDraw
 import sys
-
+from ..data.userData import user_df 
 # --- Configurações e Cores ---
 BG_MAIN = "#1A1A1A"
 ACCENT_COLOR = "#6F42C1"
@@ -19,9 +19,13 @@ MOBILE_WIDTH = 400
 MOBILE_HEIGHT = 700
 
 class UserProfileView(tk.Frame):
-    def __init__(self, master, user_data, navigate_back_callback=None):
+    def __init__(self, master, user_data, navigate_back_callback=None, session = None):
         super().__init__(master, bg=BG_MAIN)
         self.master = master
+        self.session=session
+        user = user_df[user_df["id"]== session]
+        print("teste de usuario profile: ",user)
+        
         
         if 'username' not in user_data:
              user_data['username'] = 'stefan_h' 
@@ -36,10 +40,10 @@ class UserProfileView(tk.Frame):
         self.is_editing = False
         self.banner_id = None 
 
-        # Variáveis de texto editáveis (Entry/Text)
+        #Variáveis de texto editáveis (Entry/Text)
         initial_interests = ", ".join(self.user_data.get('interests', ["Design", "Marketing", "Fotografia"]))
         
-        # NOVO: Variável para o nome completo
+        #NOVO: Variável para o nome completo
         self.name_var = tk.StringVar(value=self.user_data.get('name', 'Nome do Usuário'))
         
         self.interests_var = tk.StringVar(value=initial_interests)
@@ -148,8 +152,9 @@ class UserProfileView(tk.Frame):
         self.name_widget = self._create_name_widget(self.info_frame)
         self.name_widget.pack(fill="x", pady=(5, 0))
         
+        
         # Username (@)
-        username_label = tk.Label(self.info_frame, text=f"@{self.user_data.get('username', 'usuario_mock')}",
+        username_label = tk.Label(self.info_frame, text=f"@{self.session}",
                                      fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 11), anchor="w")
         username_label.pack(fill="x", pady=(0, 5))
 
