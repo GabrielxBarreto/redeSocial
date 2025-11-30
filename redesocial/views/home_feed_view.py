@@ -161,9 +161,9 @@ class BottomBar(tk.Frame):
             text_label.pack(pady=(0, 2))
             
             # Adiciona o comando de clique ao Frame principal
-            btn_frame.bind("<Button-1>", lambda e, cmd=command, name=view_name: (cmd(), self._update_active_state(name)))
-            icon_label.bind("<Button-1>", lambda e, cmd=command, name=view_name: (cmd(), self._update_active_state(name)))
-            text_label.bind("<Button-1>", lambda e, cmd=command, name=view_name: (cmd(), self._update_active_state(name)))
+            btn_frame.bind("<Button-1>", lambda e, cmd=command, name=view_name: (self._update_active_state(name),cmd()))
+            icon_label.bind("<Button-1>", lambda e, cmd=command, name=view_name: (self._update_active_state(name),cmd()))
+            text_label.bind("<Button-1>", lambda e, cmd=command, name=view_name: (self._update_active_state(name),cmd()))
 
             self.buttons[view_name] = {"frame": btn_frame, "icon": icon_label, "text": text_label}
             col += 1
@@ -185,7 +185,7 @@ class BottomBar(tk.Frame):
     def _show_mock_action(self, view_name):
         """Ação de callback mock para outras views."""
         
-        self.switch_view_callback(view_name,self.session) 
+        self.switch_view_callback(view_name) 
 
 
 # ==========================================================================
@@ -194,7 +194,7 @@ class BottomBar(tk.Frame):
 class HomeFeedView(tk.Frame):
     """Tela principal de Feed organizada no mesmo padrão das views Signin/Signup/Welcome"""
 
-    def __init__(self, master, switch_view_callback=None, icones=None,session = None):
+    def __init__(self, master, session,switch_view_callback=None, icones=None):
         self.switch_view_callback = switch_view_callback
         self.session = session
         super().__init__(master, bg=DARK_THEME_COLORS["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)

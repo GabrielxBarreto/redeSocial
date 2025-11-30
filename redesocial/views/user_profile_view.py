@@ -20,7 +20,7 @@ MOBILE_WIDTH = 400
 MOBILE_HEIGHT = 700
 
 class UserProfileView(tk.Frame):
-    def __init__(self, master, user_data, navigate_back_callback=None, session = None):
+    def __init__(self, master, user_data, session,navigate_back_callback=None):
         super().__init__(master, bg=BG_MAIN)
         self.master = master
         self.session=session
@@ -43,10 +43,12 @@ class UserProfileView(tk.Frame):
         self.banner_id = None 
 
         #Variáveis de texto editáveis (Entry/Text)
-        initial_interests = ", ".join(self.user_data.get('interests', ["Design", "Marketing", "Fotografia"]))
+        tags = user_df.loc[user_df["id"] == self.session, "tags"].values[0]
+        initial_interests = ", ".join(['interests']+ tags)
         
+        name_user = user_df.loc[user_df["id"] == self.session, "name"].values[0]
         #NOVO: Variável para o nome completo
-        self.name_var = tk.StringVar(value=self.user_data.get('name', 'Nome do Usuário'))
+        self.name_var = tk.StringVar(value=name_user)
         
         self.interests_var = tk.StringVar(value=initial_interests)
         self.description_var = tk.StringVar(value=self.user_data.get('description', 'Arte é minha maior paixão...'))
@@ -156,10 +158,10 @@ class UserProfileView(tk.Frame):
         
         
         # Username (@)
-        name_User = user_df.loc[user_df["id"] == self.session, "name"].values[0]
+        name_email = user_df.loc[user_df["id"] == self.session, "email"].values[0]
 
         print("DEBUG profile:",self.session)
-        username_label = tk.Label(self.info_frame, text=f"@{name_User}",
+        username_label = tk.Label(self.info_frame, text=f"@{name_email}",
                                      fg=SUBTEXT_COLOR, bg=BG_MAIN, font=("Arial", 11), anchor="w")
         username_label.pack(fill="x", pady=(0, 5))
 
@@ -401,7 +403,7 @@ class UserProfileView(tk.Frame):
     def _on_back_click(self):
         """Função chamada ao clicar no botão Voltar."""
         self._show_temp_banner("Função para ir para a Home/Feed", "#3498DB") 
-        self.after(500, self.navigate_back_callback)
+        self.after(500, self.navigate_back_callback("home"))
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ from tkinter import messagebox
 # Importa o serviço e o objeto de serviço
 from ..config.settings import USER_AUTH_SERVICE
 
+
 # Importa a View que será aberta
 #from ..views.home_view import abrir_home
 
@@ -59,6 +60,7 @@ def signupController(root, entry_name, entry_email, entry_password, entry_day, e
         if user_obj:
             messagebox.showinfo("OK", "Cadastro concluído. Acessando...")
             # Faz login automático
+            
             return loginController(root, user_obj.name, user_obj.password)
         
     except ValueError as e:

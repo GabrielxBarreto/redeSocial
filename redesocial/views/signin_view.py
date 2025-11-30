@@ -190,10 +190,11 @@ class CustomEntry(tk.Frame):
 
 class SigninView(tk.Frame):
     """Tela de login de usuário"""
-    def __init__(self, master, switch_view_callback=None, root=None, *args, **kwargs):
+    def __init__(self, master, set_session_callback,switch_view_callback=None, root=None, *args, **kwargs):
        
         super().__init__(master, bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
-        self.session = 0
+        
+        self.set_session_callback = set_session_callback
         self.switch_view_callback = switch_view_callback
         self.root= root
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
@@ -277,8 +278,9 @@ class SigninView(tk.Frame):
         signup_link_text.pack(side=tk.LEFT)
         
     def _go_to_view(self, view_name):
-        """Simula a ação de troca de tela."""
+        """ ação de troca de tela."""
         if self.switch_view_callback:
+            
             self.switch_view_callback(view_name)
         else:
             messagebox.showinfo("Navegação Mock", f"Ação de ir para a View: {view_name}")
@@ -299,8 +301,8 @@ class SigninView(tk.Frame):
         
         try:
             result = loginController(self.root, user_email, password)
-            self.session = result
-            print("DEBUG view sigin: ", self.session)
+            self.set_session_callback(result)
+            
         except Exception as e:
             print("ERRO NO LOGIN:", e)
             import traceback
@@ -309,9 +311,10 @@ class SigninView(tk.Frame):
             return
         if result != -1 and result != None:  # login bem-sucedido
             messagebox.showinfo("Sucesso", f"Login realizado com sucesso para: {user_email}!")
-            self.session = result
+            self.set_session_callback(result)
             if self.switch_view_callback:
-                self.switch_view_callback("home",self.session)
+
+                self.switch_view_callback("home")
         else:
             # Não troca de tela
             return

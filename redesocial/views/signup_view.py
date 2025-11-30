@@ -149,9 +149,10 @@ class CustomEntry(tk.Frame):
 
 class SignupView(tk.Frame):
     """Tela de cadastro de novo usuário com suporte a rolagem (Scrollbar)."""
-    def __init__(self, master, switch_view_callback=None, icones=None, *args, **kwargs):
+    def __init__(self, master,set_session_callback ,switch_view_callback=None, icones=None, *args, **kwargs):
         super().__init__(master)
         self.switch_view_callback = switch_view_callback
+        self.set_session_callback = set_session_callback
         self.icones = icones if icones else {} 
         
         self.config(bg=colors["bg_main"], width=FRAME_WIDTH, height=FRAME_HEIGHT)
@@ -329,8 +330,7 @@ class SignupView(tk.Frame):
         
         try:
             result = signupController(self.master,user,email,password,day,month,year,gender)
-            self.session = result
-            print("DEBUG view signup: ", self.session)
+    
         except Exception as e:
             print("ERRO NO LOGIN:", e)
             import traceback
@@ -339,9 +339,11 @@ class SignupView(tk.Frame):
             return
         if result != -1 and result != None:  # login bem-sucedido
             messagebox.showinfo("Sucesso", f"Login realizado com sucesso para cadastro -> login!")
-            self.session = result
+            self.set_session_callback(result)   # salva a sessão no main
+     # vai pra home
+
             if self.switch_view_callback:
-                self.switch_view_callback("home",self.session)
+                self.switch_view_callback("home")
         else:
             messagebox.showinfo("Erro em ao cadastrar!")
             return

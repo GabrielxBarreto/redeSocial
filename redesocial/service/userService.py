@@ -1,8 +1,11 @@
 from ..data.userData import user_df
 from ..data.publicationData import publication_df
 from ..data.midiaData import midia_df
+from ..data.projectsData import projects_df
 
 from ..model.publication import Publication
+from ..model.projects import Projects
+
 from ..model.midia import Midia
 from datetime import datetime, date
 
@@ -67,3 +70,11 @@ def new_post(session,archive,description):
 
 def excluirPost():
     pass
+def publish_project(session,author,title,link_github,description):
+
+    result = user_df[user_df["id"] == session]
+    result["id"].values[0]
+    project = Projects(title.get(),author.get(),session,link_github.get(),description.get())
+    projects_df.loc[len(projects_df)]=project.to_dict()
+    print(projects_df)
+
