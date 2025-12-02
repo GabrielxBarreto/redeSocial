@@ -49,7 +49,7 @@ def switch_view(name):
         print("entrando na new projects")
         current_view = NovoPostView(app_container, switch_view_callback=switch_view, icones=None, session = session)
     elif name == "ranking":
-        current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None,  session = session)
+        current_view = RankingView(app_container, switch_view_callback=switch_view, icones=None)
     elif name == "profile":
         #teste!!!
         mock_user_data = {

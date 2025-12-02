@@ -13,6 +13,7 @@ class Projects:
         self.__link_github = link_github
         self.__description = description
         self.__score = 0
+        self.feedback_ia = " "
 
     # ---------------------------
     # GETTERS e SETTERS
@@ -77,5 +78,6 @@ class Projects:
             "author_id": self.__id_author,
             "link_github": self.__link_github,
             "description": self.__description,
-            "score": self.__score
+            "score": self.__score,
+            "feedback_ia":self.feedback_ia
         }

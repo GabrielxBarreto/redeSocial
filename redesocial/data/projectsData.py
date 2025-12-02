@@ -10,16 +10,11 @@ projects_df = pd.DataFrame(columns=[
     "author_id",
     "link_github",
     "description",
-    "score"
+    "score",
+    "feedback_ia"
     
 ])
 
-
-
-import pandas as pd
-pd.set_option('display.max_colwidth', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
 
 projects_df = pd.DataFrame([
     {
@@ -29,7 +24,8 @@ projects_df = pd.DataFrame([
         "author_id": 1,
         "link_github": "https://github.com/GabrielxBarreto/redeSocial",
         "description": "Projeto completo de rede social feita em Tkinter, com feed, posts e sistema de login.",
-        "score": 87
+        "score": 87,
+        "feedback_ia":"Precisão analisada.."
     },
     {
         "id": 2,
@@ -38,7 +34,8 @@ projects_df = pd.DataFrame([
         "author_id": 1,
         "link_github": "https://github.com/GabrielxBarreto/chat-socket",
         "description": "Chat em tempo real usando Python e sockets TCP, com interface Tkinter.",
-        "score": 92
+        "score": 92,
+        "feedback_ia":"Precisão analisada.."
     },
     {
         "id": 3,
@@ -47,7 +44,8 @@ projects_df = pd.DataFrame([
         "author_id": 1,
         "link_github": "https://github.com/GabrielxBarreto/ml-algorithms",
         "description": "Implementações próprias de regressão linear, KNN e árvore de decisão.",
-        "score": 95
+        "score": 95,
+        "feedback_ia":"Precisão analisada.."
     },
     {
         "id": 4,
@@ -56,7 +54,8 @@ projects_df = pd.DataFrame([
         "author_id": 1,
         "link_github": "https://github.com/GabrielxBarreto/tkinter-login",
         "description": "Tela de login moderna feita com Tkinter e integração com banco de dados.",
-        "score": 81
+        "score": 81,
+        "feedback_ia":"Precisão analisada.."
     },
     {
         "id": 5,
@@ -65,6 +64,7 @@ projects_df = pd.DataFrame([
         "author_id": 1,
         "link_github": "https://github.com/GabrielxBarreto/python-api",
         "description": "API REST estruturada usando FastAPI, incluindo autenticação JWT.",
-        "score": 90
+        "score": 90,
+        "feedback_ia":"Precisão analisada.."
     },
 ])
