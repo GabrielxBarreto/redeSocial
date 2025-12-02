@@ -11,9 +11,11 @@ publication_df = pd.DataFrame(columns=[
     "description",
     "user",
     "day",
-    "times"
+    "times",
+    "like_counter",
+    "coments"
 ])
-#
+#id => coment
 publication_df.loc[len(publication_df)] = {
     "id": 1,
     "type": "text",
@@ -21,7 +23,8 @@ publication_df.loc[len(publication_df)] = {
     "description": "Gabriel publicou um novo post!",
     "user": 1,
     "day": "2025-11-23",
-    "times": "14:35:12"
+    "times": "14:35:12",
+    "like_counter":0
 }
 publication_df.loc[len(publication_df)] = {
     "id": 2,
@@ -30,7 +33,8 @@ publication_df.loc[len(publication_df)] = {
     "description": "alan publicou um novo post!",
     "user": 2,
     "day": "2025-11-23",
-    "times": "14:35:12"
+    "times": "14:35:12",
+    "like_counter":0
 }
 publication_df.loc[len(publication_df)] = {
     "id": 3,
@@ -39,7 +43,8 @@ publication_df.loc[len(publication_df)] = {
     "description": "bruno publicou um novo post!",
     "user": 3,
     "day": "2025-11-23",
-    "times": "14:35:12"
+    "times": "14:35:12",
+    "like_counter":0
 }
 
 publication_df.loc[len(publication_df)] = {
@@ -49,7 +54,8 @@ publication_df.loc[len(publication_df)] = {
     "description": "Gabriel publicou um novo post!",
     "user": 1,
     "day": "2025-11-23",
-    "times": "14:35:12"
+    "times": "14:35:12",
+    "like_counter":0
 }
 
 publication_df.loc[len(publication_df)] = {
@@ -59,6 +65,7 @@ publication_df.loc[len(publication_df)] = {
     "description": "jessica publicou um novo post!",
     "user": 4,
     "day": "2025-11-23",
-    "times": "14:35:12"
+    "times": "14:35:12",
+    "like_counter":0
 }
 

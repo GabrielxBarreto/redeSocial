@@ -13,6 +13,7 @@ class Publication:
         self._tags_list = tags_list
         self.day = day
         self.times = times
+        self.like_counter = 0
 
    
     @property
@@ -63,7 +64,8 @@ class Publication:
             "user": self._user,
             "tags_list": self._tags_list,
             "day": self.day,
-            "times": self.times
+            "times": self.times,
+            "like_counter": self.like_counter
 
         }
 

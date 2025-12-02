@@ -78,3 +78,10 @@ def publish_project(session,author,title,link_github,description):
     projects_df.loc[len(projects_df)]=project.to_dict()
     print(projects_df)
 
+def like_post(id_post,id_user):
+    publication_df.loc[publication_df["id"]==id_post,"like_counter"] += 1
+    print(publication_df[publication_df["id"]==id_post])
+
+def coment(id_user,text):
+    print(id_user)
+    print(text)

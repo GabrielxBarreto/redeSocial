@@ -6,6 +6,126 @@ import os
 from PIL import Image, ImageTk
 import pandas as pd 
 from ..data.userData import user_df
+from ..service.userService import like_post
+from ..service.userService import coment
+
+
+
+# MOCK THEME (substitua pelos seus)
+DARK_THEME_COLORS = {
+    "bg_main": "#1A1A1A",
+    "bg_frame": "#2A2A2A",
+    "bg_entry": "#333333",
+    "fg_text": "#FFFFFF",
+    "icon_inactive_fg": "#BBBBBB",
+    "purple_button": "#6F42C1"
+}
+
+font_inter = ("Inter", 12)
+
+
+class CommentWindow(tk.Toplevel):
+    def __init__(self, master, user_name):
+        super().__init__(master)
+        self.title("Comentários")
+        self.geometry("300x390")
+        self.configure(bg="#1A1A1A")
+
+        self.user_name =  user_df[user_df["id"] == user_name]["name"].iloc[0]  # Nome do usuário que vai comentar
+
+        # ========== FRAME PRINCIPAL ==========
+        main_frame = tk.Frame(self, bg="#1A1A1A")
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # ========== ÁREA DOS COMENTÁRIOS (rolável) ==========
+        comment_container = tk.Frame(main_frame, bg="#1A1A1A")
+        comment_container.pack(fill="both", expand=True)
+
+        self.canvas = tk.Canvas(comment_container, bg="#1A1A1A", highlightthickness=0)
+        self.scrollbar = ttk.Scrollbar(comment_container, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = tk.Frame(self.canvas, bg="#1A1A1A")
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+        # Guarda todos os comentários
+        self.comments = []
+
+        # ========== ÁREA DE INPUT DO COMENTÁRIO ==========
+        input_frame = tk.Frame(main_frame, bg="#1A1A1A")
+        input_frame.pack(fill="x", pady=5)
+
+        self.comment_entry = tk.Entry(input_frame, font=("Arial", 12), bg="#333333", fg="white", insertbackground="white")
+        self.comment_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+        send_button = tk.Button(
+            input_frame,
+            text="Enviar",
+            command=self.add_comment,
+            bg="#6F42C1",
+            fg="white",
+            font=("Arial", 11, "bold")
+        )
+        send_button.pack(side="right")
+
+    # ===========================
+    # ADICIONA COMENTÁRIO NA TELA
+    # ===========================
+    def add_comment(self):
+        text = self.comment_entry.get().strip()
+        coment(self.user_name,text)
+        if text == "":
+            messagebox.showwarning("Aviso", "Digite um comentário antes de enviar!")
+            return
+
+        self.comments.append((self.user_name, text))
+        self.comment_entry.delete(0, tk.END)
+        self.update_comments()
+
+    # ===========================
+    # ATUALIZA VISUALIZAÇÃO
+    # ===========================
+    def update_comments(self):
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
+
+        for name, comment in self.comments:
+            wrapper = tk.Frame(self.scrollable_frame, bg="#1A1A1A")
+            wrapper.pack(fill="x", pady=5)
+
+            # Nome em destaque
+            name_label = tk.Label(
+                wrapper,
+                text=name,
+                fg="#6F42C1",
+                bg="#1A1A1A",
+                font=("Arial", 12, "bold")
+            )
+            name_label.pack(anchor="w")
+
+            # Comentário embaixo
+            comment_label = tk.Label(
+                wrapper,
+                text=comment,
+                fg="white",
+                bg="#1A1A1A",
+                font=("Arial", 11),
+                wraplength=360,
+                justify="left"
+            )
+            comment_label.pack(anchor="w")
+
+        # Mantém scroll sempre no final
+        self.canvas.yview_moveto(1)
+
 
 # --- Importações de Dados e Utils ---
 
@@ -192,7 +312,7 @@ class BottomBar(tk.Frame):
 # 2. Classe HomeFeedView (Atualizada para incluir Navbar)
 # ==========================================================================
 class HomeFeedView(tk.Frame):
-    """Tela principal de Feed organizada no mesmo padrão das views Signin/Signup/Welcome"""
+    """Tela principal de Feed organizada """
 
     def __init__(self, master, session,switch_view_callback=None, icones=None):
         self.switch_view_callback = switch_view_callback
@@ -207,7 +327,10 @@ class HomeFeedView(tk.Frame):
         self._create_widgets()
         self._create_bottom_bar() # Chamada para criar a Navbar
 
-
+    def open_comments(self, post_id):
+        """Abre a janela de comentários para o post escolhido."""
+        CommentWindow(self, post_id)
+            # Obter dados do usuário (usando a lógica do pandas)
     # ---------------------------------------------------------------------
     # 1. Criar estrutura da tela (Header e Content Area)
     # ---------------------------------------------------------------------
@@ -292,7 +415,7 @@ class HomeFeedView(tk.Frame):
             tk.Label(self.feed_frame, text="Nenhuma publicação encontrada.",
                      bg=DARK_THEME_COLORS["bg_main"], fg=DARK_THEME_COLORS["icon_inactive_fg"]).pack(pady=20)
 
-
+    
     # ---------------------------------------------------------------------
     # 4. Criar o card individual
     # ---------------------------------------------------------------------
@@ -300,8 +423,7 @@ class HomeFeedView(tk.Frame):
         """Cria um post no mesmo estilo da versão anterior, só que organizado."""
         card = tk.Frame(self.feed_frame, bg=DARK_THEME_COLORS["bg_frame"], padx=15, pady=15)
         card.pack(fill='x', padx=10, pady=10)
-
-        # Obter dados do usuário (usando a lógica do pandas)
+    
         try:
             username = user_df[user_df["id"] == post_data["user"]]["name"].iloc[0]
         except (IndexError, KeyError):
@@ -334,24 +456,32 @@ class HomeFeedView(tk.Frame):
 
         # ---------- Imagem ----------
         self._add_post_image(card, post_data)
-
+        def like(id_post,id_user):
+            
+            like_post(id_post,id_user)
+            self.switch_view_callback("home")
+          
         # ---------- Ações ----------
         actions = tk.Frame(card, bg=DARK_THEME_COLORS["bg_frame"])
         actions.pack(fill='x', pady=5)
-
-        tk.Button(actions, text="❤️ Curtir",
+        id_user = user_df[user_df["id"] == self.session]["id"].iloc[0]
+        id_post = post_data["id"]
+        tk.Button(actions, text=f"❤️ {publication_df[publication_df["id"] == id_post]["like_counter"].iloc[0]}",
+                  
                   bg=DARK_THEME_COLORS["bg_frame"],
                   fg=DARK_THEME_COLORS["icon_inactive_fg"],
                   bd=0,
+                  command= lambda:like(id_post,id_user),
                   font=font_inter).pack(side='left', padx=10)
-
+        pid = post_data["id"]
         tk.Button(actions, text="💬 Comentar",
                   bg=DARK_THEME_COLORS["bg_frame"],
                   fg=DARK_THEME_COLORS["icon_inactive_fg"],
                   bd=0,
+                  command= lambda:  self.open_comments(pid),
                   font=font_inter).pack(side='left')
-
-
+        
+    
     # ---------------------------------------------------------------------
     def _add_post_image(self, parent, post_data):
         """Carrega imagem se existir."""
